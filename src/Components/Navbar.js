@@ -104,6 +104,9 @@ function DrawerAppBar(props) {
     };
     const navigate = useNavigate()
     const handleSignOut = () => {
+        setValue(1)
+        setItems({})
+        setFilteredItems({})
         localStorage.removeItem('token');
         navigate("/smart-tracker")
     }

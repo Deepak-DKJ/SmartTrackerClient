@@ -320,111 +320,118 @@ const Summary = () => {
               <Box p={2} sx={{ width: "100%", height: '53vh', paddingBottom: '10px', overflowY: 'auto' }}>
                 {value === 0 && (
                   <>
-                    <div style={{ width: '100%', maxWidth: 400, height: '41vh', margin: 'auto' }}>
 
-                      <Line
-                        data={{
-                          labels: labels,
-                          datasets: [
-                            {
-                              label: 'Earnings',
-                              data: earnings,
-                              borderColor: 'orange',
-                              // backgroundColor: 'rgba(251, 192, 147, 0.4)',
-                            },
-                            {
-                              label: 'Expenses',
-                              data: expenses,
-                              borderColor: 'cyan',
-                              // backgroundColor: 'rgba(103, 242, 209, 0.4)',
-                            },
-                          ],
-                        }}
-                        options={{
-                          maintainAspectRatio: false,
-                          scales: {
-                            x: {
-                              title: {
-                                display: true,
-                                text: `${Label}`,
+                    {(Object.keys(chartItems).length === 0) ? (
+                      <h6 style={{ textAlign: "center" }}>No Entries found!</h6>
+                    ) : (
+                      <>
+                        <div style={{ width: '100%', maxWidth: 400, height: '41vh', margin: 'auto' }}>
+
+                          <Line
+                            data={{
+                              labels: labels,
+                              datasets: [
+                                {
+                                  label: 'Earnings',
+                                  data: earnings,
+                                  borderColor: 'orange',
+                                  // backgroundColor: 'rgba(251, 192, 147, 0.4)',
+                                },
+                                {
+                                  label: 'Expenses',
+                                  data: expenses,
+                                  borderColor: 'cyan',
+                                  // backgroundColor: 'rgba(103, 242, 209, 0.4)',
+                                },
+                              ],
+                            }}
+                            options={{
+                              maintainAspectRatio: false,
+                              scales: {
+                                x: {
+                                  title: {
+                                    display: true,
+                                    text: `${Label}`,
+                                  },
+                                  grid: {
+                                    display: true, // Enable x-axis grid lines
+                                    color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                  },
+                                },
+                                y: {
+                                  grid: {
+                                    display: true, // Enable y-axis grid lines
+                                    color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                  },
+                                },
                               },
-                              grid: {
-                                display: true, // Enable x-axis grid lines
-                                color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                              elements: {
+                                point: {
+                                  radius: 4.5, // Adjust point size as needed
+                                },
                               },
-                            },
-                            y: {
-                              grid: {
-                                display: true, // Enable y-axis grid lines
-                                color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                              plugins: {
+                                legend: {
+                                  labels: {
+                                    font: { weight: "bold", size: 13 },
+                                  },
+                                },
                               },
-                            },
-                          },
-                          elements: {
-                            point: {
-                              radius: 4.5, // Adjust point size as needed
-                            },
-                          },
-                          plugins: {
-                            legend: {
-                              labels: {
-                                font: { weight: "bold", size: 13 },
-                              },
-                            },
-                          },
-                        }}
-                      />
+                            }}
+                          />
 
-                      <hr />
+                          <hr />
 
-                      {/* Label Section */}
-                      {/* <Box mt={1} display="flex" justifyContent="center">
-                        <Typography variant="body2" color="textSecondary">
-                          Duration: {Label}
-                        </Typography>
-                      </Box>
+                          <Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
+                          <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
+                              Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
+                            </Typography>
+                            
+                            <Typography variant="body1" sx={{  ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
+                            </Typography>
+                           
+                          </Box>
 
-           */}
-                      <Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
-                        <Typography variant="body2" sx={{ color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
-                        </Typography>
-                        <Typography variant="body1" sx={{ ml: 1.2, color: "#B0B0B0" }}>
-                          Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
-                        </Typography>
-                      </Box>
+                        </div>
 
-                    </div>
-
+                      </>
+                    )}
                   </>
                 )}
 
                 {value === 1 && (
                   <>
-                    <Box >
-                      <TableContainer component={Paper} sx={{ maxHeight: "49vh" }}>
-                        <Table stickyHeader aria-label="item summary table">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell><strong>Date</strong></TableCell>
-                              <TableCell align="right"><strong>Expenses</strong></TableCell>
-                              <TableCell align="right"><strong>Earnings</strong></TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {Object.entries(chartItems).map(([date, { expense, earning }]) => (
-                              <TableRow key={date}>
-                                <TableCell sx={{color:'#B0B0B0'}}>{date}</TableCell>
-                                <TableCell align="right">₹{expense}</TableCell>
-                                <TableCell align="right">₹{earning}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    </Box>
+
+                    {(Object.keys(chartItems).length === 0) ? (
+                      <h6 style={{ textAlign: "center" }}>No Entries found!</h6>
+                    ) : (
+                      <>
+                        <Box >
+                          <TableContainer component={Paper} sx={{ maxHeight: "49vh" }}>
+                            <Table stickyHeader aria-label="item summary table">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell><strong>Date</strong></TableCell>
+                                  <TableCell align="right"><strong>Expenses</strong></TableCell>
+                                  <TableCell align="right"><strong>Earnings</strong></TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {Object.entries(chartItems).map(([date, { expense, earning }]) => (
+                                  <TableRow key={date}>
+                                    <TableCell sx={{ color: '#B0B0B0' }}>{date}</TableCell>
+                                    <TableCell align="right">₹{expense}</TableCell>
+                                    <TableCell align="right">₹{earning}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        </Box>
+                      </>
+                    )}
                   </>
                 )}
-
               </Box>
             </Box>
           </Box>
