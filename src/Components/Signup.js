@@ -52,7 +52,7 @@ const Signup = () => {
       console.log(err)
       setAlert({
         "vis": true,
-        "msg": err.response.data.error
+        "msg":  err.response ? err.response.data.error : "Some error!"
       })
       // console.log(err.response.data.error)
     }
@@ -122,7 +122,7 @@ const Signup = () => {
               </div>
               <div className="links">
                 <p>Already a user?</p>
-                <Link to="/testGenerator/login">Login</Link>
+                <Link to="/smart-tracker/login">Login</Link>
               </div>
               <div className="inputBox">
                 <input type="submit" value="Create User" onClick={handleAddUser} />

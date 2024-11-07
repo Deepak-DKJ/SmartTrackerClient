@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TextField, Button, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { MobileDatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -8,10 +8,19 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
 import { TrackerContext } from '../Context/TrackerContext';
 import { SwapSpinner } from 'react-spinners-kit';
+const getStringDate = (date) => {
+  // const date = new Date();
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const yyyy = date.getFullYear();
+
+  const formattedDate = `${dd}/${mm}/${yyyy}`;
+  return formattedDate
+
+}
 
 function CreateItem() {
-  const { baseUrl, setUserData } = useContext(TrackerContext)
-  const [inputMsg, setInputMsg] = useState('');
+  const { baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg } = useContext(TrackerContext)
   const [aiMsg, setAiMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
 
@@ -36,8 +45,40 @@ function CreateItem() {
     setOpen(false);
   };
 
+  useEffect(() => {
+    const fetch_data = async () => {
+      // console.log(items)
+      if (Object.keys(items).length > 0)
+        return;
+      // setShowProgress(true)
+      try {
+        let authToken = localStorage.getItem('token')
+        // console.log(authToken)
+        const response = await axios.get(`${baseUrl}/items/getallitems`, {
+          headers: {
+            Token: authToken, // Set the Authorization header with Bearer token
+          },
+        });
+        const dat = response.data
+        setItems(dat)
+      }
+      catch (err) {
+        console.log(err)
+        // setShowProgress(false)
+      }
+    }
+    fetch_data();
+  }, [])
+
   const [isLoading, setIsLoading] = useState(false)
   const handleSubmit =  async() => {
+    if(inputMsg === "")
+    {
+      setAiMsg("Please enter the missing details!")
+      const btn = document.getElementById("infosnackbar");
+      if (btn) btn.click();
+      return;
+    }
     // console.log('Entry:', inputMsg, 'Date:', selectedDate.format('DD-MM-YYYY'));
     const dt = new Date(selectedDate)
     // console.log(dt)
@@ -58,13 +99,11 @@ function CreateItem() {
         },
       });
       const dat = response.data;
-      console.log(dat)
-      // Find the nearest multiple of 5 using Math.round and adjust accordingly
-      // const testDuration = Math.round(halfCount / 5) * 5;
-      // setDur(testDuration)
-      // const btn = document.getElementById("savetest")
-      // if (btn)
-      //   btn.click()
+      // console.log(dat)
+      setItems({});
+      setInputMsg("")
+      setSelectedDate(dayjs())
+      
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -72,7 +111,7 @@ function CreateItem() {
       console.log("Error2: ", err.response);
       setIsLoading(false)
       if (err.response)
-        setAiMsg(err.response.data.airesp);
+        setAiMsg(err.response.data.error);
       const btn = document.getElementById("infosnackbar");
       if (btn) btn.click();
     }
@@ -108,25 +147,25 @@ function CreateItem() {
       >
         Open Snackbar
       </Button>
-      <Snackbar open={open} autoHideDuration={8000} onClose={handleClose}>
+      <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert
           onClose={handleClose}
           severity="info"
           variant="filled"
           sx={{ width: "100%", color: "white" }}
         >
-          AI's Response : {aiMsg}
+          {aiMsg}
         </Alert>
       </Snackbar>
 
         <Container sx={{ padding: '40px', maxWidth: '400px', minHeight: 'calc(100vh - 56px)', bgcolor: 'background.default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <Typography variant="h5" sx={{ color: 'primary.main', textAlign: 'center' }}>
-              ADD ITEM
-            </Typography>
+            {/* <Typography variant="h5" sx={{ color: 'primary.main', textAlign: 'center' }}>
+              ADD ENTRY
+            </Typography> */}
 
             <Box sx={{ textAlign: 'center', mb: 0 }}>
-            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="85%"/>
+            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="88%"/>
             </Box>
           
             <TextField
@@ -138,6 +177,7 @@ function CreateItem() {
               onChange={handleInputChange}
               variant="outlined"
               fullWidth
+              required
               sx={{ bgcolor: 'background.paper', borderRadius: '4px'}}
             />
             {/* <Box sx={{backgroundColor:"#"}}> */}
@@ -147,7 +187,7 @@ function CreateItem() {
               value={selectedDate}
               closeOnSelect={true}
               onChange={handleDateChange}
-              format="DD/MM/YYYY"
+              format="DD MMM, YYYY" 
               disableFuture={true}
             />
             {/* </Box> */}

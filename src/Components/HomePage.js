@@ -37,7 +37,9 @@ const styles = {
 const HomePage = () => {
   const navigate = useNavigate();
   const GotoItemsPage = () => {
-    navigate('/smart-tracker/create');
+    if (!localStorage.getItem('token'))
+      navigate("/smart-tracker/login")
+    else navigate('/smart-tracker/create');
   };
 
   const steps = [

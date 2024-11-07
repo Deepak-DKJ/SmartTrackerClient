@@ -9,6 +9,7 @@ import Dashboard from './Dashboard';
 import CreateItem from './CreateItem';
 import Summary from './Summary';
 
+import { TrackerContext } from '../Context/TrackerContext';
 
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
@@ -19,6 +20,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import InsertChartIcon from '@mui/icons-material/InsertChart';
 import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
 import DrawerAppBar from './Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const darkTheme = createTheme({
     palette: {
@@ -32,10 +34,16 @@ const darkTheme = createTheme({
       },
     },
   });
-  
 
 export default function FixedBottomNavigation() {
-  const [value, setValue] = React.useState(1);
+  const navigate = useNavigate()
+  React.useEffect(() => {
+  if (!localStorage.getItem('token'))
+    navigate("/smart-tracker")
+}, [])
+
+const { value, setValue } = React.useContext(TrackerContext);
+    
   const ref = React.useRef(null);
   
 

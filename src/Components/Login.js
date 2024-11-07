@@ -32,9 +32,11 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${baseUrl}/auth/login`, data);
-
-      localStorage.setItem('token', response.data.authToken)
-      localStorage.setItem('userdata',  JSON.stringify(response.data.userData))
+      if(response.data)
+      {
+        localStorage.setItem('token', response.data.authToken)
+        localStorage.setItem('userdata',  JSON.stringify(response.data.userData))
+      }
       // console.log(response.data.userData)
       // console.log(JSON.parse(localStorage.getItem('userdata')))
       setEmail("")
@@ -44,10 +46,10 @@ const Login = () => {
     }
     catch (err) {
       setLoading(false)
-      // console.log(err)
+      console.log(err)
       setAlert({
         "vis": true,
-        "msg": err.response.data.error
+        "msg": err.response ? err.response.data.error : "Some error!"
       })
       // console.log(err.response.data.error)
     }
