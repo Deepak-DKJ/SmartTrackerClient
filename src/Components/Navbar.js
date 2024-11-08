@@ -154,7 +154,7 @@ function DrawerAppBar(props) {
                         }
                         secondary={
                             <Typography component="span" sx={{ ml: 1, color: 'white' }}>
-                                {user.name}
+                                {user?.name}
                             </Typography>
                         }
                     />
@@ -169,7 +169,7 @@ function DrawerAppBar(props) {
                         }
                         secondary={
                             <Typography component="span" sx={{ ml: 1, color: 'white' }}>
-                                {user.email}
+                                {user?.email}
                             </Typography>
                         }
                     />
@@ -184,7 +184,7 @@ function DrawerAppBar(props) {
                         }
                         secondary={
                             <Typography component="span" sx={{ ml:1, color: 'white' }}>
-                                {user.created}
+                                {user?.created}
                             </Typography>
                         }
                     />
