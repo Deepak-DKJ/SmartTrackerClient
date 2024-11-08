@@ -22,7 +22,7 @@ function App() {
             <Route exact path='/smart-tracker/create' Component={NavBottom} />
             <Route exact path='/smart-tracker/login' Component={Login} />
             <Route exact path='/smart-tracker/signup' Component={Signup} />
-            <Route path = '*' element={<Navigate to="/smart-tracker" />} />
+            <Route path = '*' element={<Navigate to="/smart-tracker/create" />} />
           </Routes>
         </BrowserRouter>
       </TrackerProvider>

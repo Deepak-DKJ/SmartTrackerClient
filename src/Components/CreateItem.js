@@ -22,6 +22,7 @@ const getStringDate = (date) => {
 function CreateItem() {
   const { baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg } = useContext(TrackerContext)
   const [aiMsg, setAiMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
 
   const handleInputChange = (e) => {
@@ -32,6 +33,7 @@ function CreateItem() {
     setSelectedDate(date);
   };
   const [open, setOpen] = React.useState(false);
+  const [open2, setOpen2] = React.useState(false);
 
   const handleClick = () => {
     setOpen(true);
@@ -43,6 +45,14 @@ function CreateItem() {
     }
 
     setOpen(false);
+  };
+
+  const handleClose2= (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen2(false);
   };
 
   useEffect(() => {
@@ -68,7 +78,7 @@ function CreateItem() {
       }
     }
     fetch_data();
-  }, [])
+  }, [items])
 
   const [isLoading, setIsLoading] = useState(false)
   const handleSubmit =  async() => {
@@ -105,6 +115,10 @@ function CreateItem() {
       setSelectedDate(dayjs())
       
       setIsLoading(false);
+      setSuccessMsg("Entry added successfully!")
+      const btn = document.getElementById("successsnackbar");
+      if (btn) btn.click();
+      
     } catch (err) {
       setIsLoading(false);
       // console.log("Error1: ", err);
@@ -147,6 +161,14 @@ function CreateItem() {
       >
         Open Snackbar
       </Button>
+
+      <Button
+        id="successsnackbar"
+        style={{ display: "none" }}
+        onClick={() => setOpen2(true)}
+      >
+        Open Snackbar
+      </Button>
       <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert
           onClose={handleClose}
@@ -158,13 +180,24 @@ function CreateItem() {
         </Alert>
       </Snackbar>
 
+      <Snackbar open={open2} autoHideDuration={3000} onClose={handleClose2}>
+        <Alert
+          onClose={handleClose2}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%", color: "white" }}
+        >
+          {successMsg}
+        </Alert>
+      </Snackbar>
+
         <Container sx={{ padding: '40px', maxWidth: '400px', minHeight: 'calc(100vh - 56px)', bgcolor: 'background.default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {/* <Typography variant="h5" sx={{ color: 'primary.main', textAlign: 'center' }}>
               ADD ENTRY
             </Typography> */}
 
-            <Box sx={{ textAlign: 'center', mb: 0 }}>
+            <Box sx={{ textAlign: 'center', mb: 0,  minHeight: '33vh' }}>
             <img src="/smarttracker.png" alt="TestGen.AI Logo" width="88%"/>
             </Box>
           

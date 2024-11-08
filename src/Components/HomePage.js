@@ -55,8 +55,8 @@ const HomePage = () => {
           </Typography>
         </Box>
       <Container>      
-        <Box sx={{ textAlign: 'center', mb: 0 }}>
-          <img src="/smarttracker.png" alt="TestGen.AI Logo" width="100%" />
+        <Box sx={{ textAlign: 'center', mb: 0, minHeight: '40vh' }}>
+          <img src="/smarttracker.png" alt="TestGen.AI Logo" width="90%" />
         </Box>
 
         <Grid container spacing={2}>
