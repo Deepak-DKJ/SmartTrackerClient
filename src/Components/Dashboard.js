@@ -162,7 +162,7 @@ const Dashboard = () => {
   }, [searchString])
 
   useEffect(() => {
-    console.log(filters.lastxdays)
+    // console.log(filters.lastxdays)
     getLastxDaysData(filters.lastxdays)
   }, [filters, items])
 
