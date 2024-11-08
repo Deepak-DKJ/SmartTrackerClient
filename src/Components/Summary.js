@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Box, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Select, MenuItem, Divider, Typography, Button, Card, CardContent } from '@mui/material';
 import { MobileDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+
+
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { TrackerContext } from '../Context/TrackerContext';
@@ -407,8 +409,8 @@ const Summary = () => {
                     ) : (
                       <>
                         <Box >
-                          <TableContainer component={Paper} sx={{ maxHeight: "49vh" }}>
-                            <Table stickyHeader aria-label="item summary table">
+                          <TableContainer component={Paper} sx={{ height: "41vh" }}>
+                            <Table  stickyHeader aria-label="item summary table">
                               <TableHead>
                                 <TableRow>
                                   <TableCell><strong>Date</strong></TableCell>
@@ -427,6 +429,18 @@ const Summary = () => {
                               </TableBody>
                             </Table>
                           </TableContainer>
+
+                          <hr />
+
+<Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
+<Typography variant="body1" sx={{ color: "#B0B0B0" }}>
+    Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
+  </Typography>
+  
+  <Typography variant="body1" sx={{  ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
+  </Typography>
+ 
+</Box>
                         </Box>
                       </>
                     )}

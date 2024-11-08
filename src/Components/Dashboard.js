@@ -73,7 +73,7 @@ const getStringDate = (date) => {
 }
 
 const Dashboard = () => {
-  const { searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
+  const { searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
 
@@ -98,27 +98,71 @@ const Dashboard = () => {
 
 
   const getLastxDaysData = (days) => {
-    setShowProgress(true)
+    // console.log(days)
+    // console.log(items)
+    setShowProgress(true);
     const today = new Date();
     const itemsForLastxDays = {};
 
     for (let i = 0; i < days; i++) {
       const currentDate = new Date();
-      currentDate.setDate(today.getDate() - i); // Go back 'i' days
-      const dateString = getStringDate(currentDate); // Format the date as a string
-      //   if (days <= 7)
-      //     itemsForLastxDays[dateString] = items[dateString] || [];
-      //   else {
-      if (dateString in items)
-        itemsForLastxDays[dateString] = items[dateString];
-      //   }
+      currentDate.setDate(today.getDate() - i);
+      const dateString = getStringDate(currentDate);
+
+      if (dateString in items) {
+        const filteredEntries = [];
+        // console.log(filters)
+        if (filters.type === "All" && filters.cat === "Any") {
+          // No specific filter, add all items for this date
+          itemsForLastxDays[dateString] = items[dateString];
+        } else {
+          // Filter based on type and cat
+          items[dateString].forEach((item) => {
+            if (
+              (filters.type === "All" || item.type === filters.type) &&
+              (filters.cat === "Any" || item.category === filters.cat)
+            ) {
+              filteredEntries.push(item);
+            }
+          });
+          // Add the filtered entries to the date only if there's a match
+          if (filteredEntries.length > 0) {
+            itemsForLastxDays[dateString] = filteredEntries;
+          }
+        }
+      }
     }
-    // console.log(itemsForLastxDays)
-    setFilteredItems(itemsForLastxDays)
-    setShowProgress(false)
+
+    setFilteredItems(itemsForLastxDays);
+    setSearchedItems(itemsForLastxDays)
+    setShowProgress(false);
   };
 
   useEffect(() => {
+    if (searchString === "") {
+      setFilteredItems(searchedItems);
+      return;
+    }
+    const updatedFilteredItems = {};
+
+    // Loop through each date in searchedItems
+    Object.keys(searchedItems).forEach((date) => {
+      const filteredEntries = searchedItems[date].filter((item) =>
+        item.itemName.toLowerCase().includes(searchString.toLowerCase())
+      );
+
+      // Only add the date if there are matching items for that date
+      if (filteredEntries.length > 0) {
+        updatedFilteredItems[date] = filteredEntries;
+      }
+    });
+
+    setFilteredItems(updatedFilteredItems);
+
+  }, [searchString])
+
+  useEffect(() => {
+    console.log(filters.lastxdays)
     getLastxDaysData(filters.lastxdays)
   }, [filters, items])
 
@@ -430,6 +474,7 @@ const Dashboard = () => {
                         onChange={(e) => setSelectedItemCat(e.target.value)}
                         style={{ marginBottom: "20px", marginTop: "20px" }}
                         variant='outlined'
+                        sx={{ display: "none" }}
                       />
                     </Box>
                   </DialogContent>
@@ -477,60 +522,59 @@ const Dashboard = () => {
                             <>
                               {filteredItems[date].map(item => (
                                 <Grid item xs={12} key={item.itemId}>
-                                  {(filters.type === "All" || filters.type === item.type) && (searchString === "" || item.itemName.toLowerCase().includes(searchString.toLowerCase())) && (
-                                    <>
-                                      <Card onClick={() => {
-                                        setSelectedItemId(item.itemId)
-                                        setSelectedItemName(item.itemName)
-                                        setSelectedItemDate(date)
-                                        setSelectedItemAmt(item.totalPrice)
-                                        setSelectedItemCat(item.category)
-                                        setSelectedItemQn(item.quantity)
-                                        setSelectedItemType(item.type)
 
-                                        handleOpenFilterModal();
-                                      }}
+                                  <>
+                                    <Card onClick={() => {
+                                      setSelectedItemId(item.itemId)
+                                      setSelectedItemName(item.itemName)
+                                      setSelectedItemDate(date)
+                                      setSelectedItemAmt(item.totalPrice)
+                                      setSelectedItemCat(item.category)
+                                      setSelectedItemQn(item.quantity)
+                                      setSelectedItemType(item.type)
 
-                                        sx={{ padding: '8px', borderRadius: '0px', bgcolor: '#3E3E3E' }} >
-                                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                                          <Box>
-                                            <Typography variant="h6" sx={{ fontSize: "15px", fontWeight: 'bold', color: 'cyan' }}>
-                                              {item.itemName}
+                                      handleOpenFilterModal();
+                                    }}
+
+                                      sx={{ padding: '8px', borderRadius: '0px', bgcolor: '#3E3E3E' }} >
+                                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                                        <Box>
+                                          <Typography variant="h6" sx={{ fontSize: "15px", fontWeight: 'bold', color: 'cyan' }}>
+                                            {item.itemName}
+                                          </Typography>
+                                          <Box display="flex" alignItems="center" mt={0.1}>
+                                            <Typography variant="body2" sx={{ color: "#B0B0B0" }}>
+                                              {item.type} <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>{item.category.trim()}</span>
                                             </Typography>
-                                            <Box display="flex" alignItems="center" mt={0.1}>
-                                              <Typography variant="body2" sx={{ color: "#B0B0B0" }}>
-                                                {item.type} <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>{item.category.trim()}</span>
-                                              </Typography>
-                                              <Typography variant="body2" sx={{ ml: 1, color: "#B0B0B0" }}>
-                                                Quantity <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>{item.quantity}</span>
-                                              </Typography>
-                                            </Box>
-                                          </Box>
-
-                                          <Box
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                            sx={{
-                                              bgcolor: 'cyan',
-                                              color: 'black',
-                                              borderRadius: 2,
-                                              fontWeight: "bold",
-                                              padding: '6px',
-                                              minWidth: '40px',
-                                              textAlign: 'center',
-                                              fontSize: '1rem',
-                                            }}
-                                          >
-                                            <CurrencyRupeeIcon sx={{ fontSize: '17px', margin: "0px", padding: "0px" }} />{item.totalPrice}
+                                            <Typography variant="body2" sx={{ ml: 1, color: "#B0B0B0" }}>
+                                              Quantity <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>{item.quantity}</span>
+                                            </Typography>
                                           </Box>
                                         </Box>
 
-                                      </Card>
+                                        <Box
+                                          display="flex"
+                                          alignItems="center"
+                                          justifyContent="center"
+                                          sx={{
+                                            bgcolor: 'cyan',
+                                            color: 'black',
+                                            borderRadius: 2,
+                                            fontWeight: "bold",
+                                            padding: '6px',
+                                            minWidth: '40px',
+                                            textAlign: 'center',
+                                            fontSize: '1rem',
+                                          }}
+                                        >
+                                          <CurrencyRupeeIcon sx={{ fontSize: '17px', margin: "0px", padding: "0px" }} />{item.totalPrice}
+                                        </Box>
+                                      </Box>
 
-                                      <hr style={{ margin: "2px", color: 'black' }} />
-                                    </>
-                                  )}
+                                    </Card>
+
+                                    <hr style={{ margin: "2px", color: 'black' }} />
+                                  </>
 
                                 </Grid>
                               ))}

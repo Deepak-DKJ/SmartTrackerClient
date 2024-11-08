@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import InputBase from '@mui/material/InputBase';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 
@@ -74,7 +75,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { value, setValue, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems } = React.useContext(TrackerContext);
+    const { value, setValue, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -197,36 +198,12 @@ function DrawerAppBar(props) {
         </Box>
     );
 
-    const [daysNumber, setDaysNumber] = React.useState(7);
-    const [filterType, setFilterType] = React.useState("All");
+    const [daysNumber, setDaysNumber] = React.useState(filters.lastxdays);
+    const [filterType, setFilterType] = React.useState(filters.type);
+    const [catType, setCatType] = React.useState(filters.cat);
 
     const container = window !== undefined ? () => window().document.body : undefined;
 
-    const getLastxDaysData = (days) => {
-        // console.log(days)
-        // console.log(items)
-        const today = new Date();
-        const itemsForLastxDays = {};
-
-        for (let i = 0; i < days; i++) {
-            const currentDate = new Date();
-            currentDate.setDate(today.getDate() - i); // Go back 'i' days
-            const dateString = getStringDate(currentDate); // Format the date as a string
-            //   if (days <= 7)
-            //     itemsForLastxDays[dateString] = items[dateString] || [];
-            //   else {
-            if (dateString in items)
-                itemsForLastxDays[dateString] = items[dateString];
-            //   }
-        }
-        // console.log(itemsForLastxDays)
-        setFilteredItems(itemsForLastxDays)
-    };
-
-    //   React.useEffect(()=> {
-    //     console.log("LMAOOS")
-    //     handleCloseFilterModal();
-    //   }, [filteredItems])
     return (
         <>
 
@@ -265,14 +242,37 @@ function DrawerAppBar(props) {
                         <TextField
                             select
                             fullWidth
-                            label="Type"
+                            label="Select Type"
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
                             style={{ marginBottom: "15px" }}
                         >
-                            <MenuItem value="All">All</MenuItem>
+                            <MenuItem value="All">Any</MenuItem>
                             <MenuItem value="Expense">Expense</MenuItem>
                             <MenuItem value="Earning">Earning</MenuItem>
+                        </TextField>
+
+                        <TextField
+                            select
+                            fullWidth
+                            label="Select Tag"
+                            value={catType}
+                            onChange={(e) => setCatType(e.target.value)}
+                            style={{ marginBottom: "15px" }}
+                        >
+                            <MenuItem value="Any">Any</MenuItem>
+                            <MenuItem value="Groceries">Groceries</MenuItem>
+                            <MenuItem value="Household">Household</MenuItem>
+                            <MenuItem value="Shopping">Shopping</MenuItem>
+                            <MenuItem value="Entertainment">Entertainment</MenuItem>
+                            <MenuItem value="Travel & Fuel">Travel & Fuel</MenuItem>
+                            <MenuItem value="Healthcare">Healthcare</MenuItem>
+                            <MenuItem value="Investment">Investment</MenuItem>
+                            <MenuItem value="Salary">Salary</MenuItem>
+                            <MenuItem value="Savings">Savings</MenuItem>
+                            <MenuItem value="Refunds">Refunds</MenuItem>
+                            <MenuItem value="Returns">Returns</MenuItem>
+                            <MenuItem value="Earning">Others</MenuItem>
                         </TextField>
                     </Box>
                 </DialogContent>
@@ -283,8 +283,15 @@ function DrawerAppBar(props) {
                         onClick={() => {
                             setFilters({
                                 lastxdays: daysNumber,
-                                type: filterType
+                                type: filterType,
+                                cat: catType
                             });
+                            
+                            localStorage.setItem('filterLocal', JSON.stringify({
+                                lastxdays: daysNumber,
+                                type: filterType,
+                                cat: catType
+                            }))
                             // Handle filter application here
                             //   getLastxDaysData(filters.lastxdays)
                             handleCloseFilterModal();
@@ -319,7 +326,7 @@ function DrawerAppBar(props) {
                                 <Typography variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
-                                <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                {searchString === "" ? (<FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />) : ( <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />)}
 
                                 <Search sx={{ marginLeft: 'auto' }}>
                                     <SearchIconWrapper>

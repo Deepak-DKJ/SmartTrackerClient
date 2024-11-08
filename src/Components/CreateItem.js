@@ -174,7 +174,8 @@ function CreateItem() {
           onClose={handleClose}
           severity="info"
           variant="filled"
-          sx={{ width: "100%", color: "white" }}
+          sx={{ width: "96%", color: "white", position:"fixed", top:"8.4vh", textAlign:'center' }}
+          // sx={{ width: "100%", color: "white" }}
         >
           {aiMsg}
         </Alert>
@@ -185,7 +186,7 @@ function CreateItem() {
           onClose={handleClose2}
           severity="success"
           variant="filled"
-          sx={{ width: "100%", color: "white" }}
+          sx={{ width: "96%", color: "white", position:"fixed", top:"9.4vh", textAlign:'center' }}
         >
           {successMsg}
         </Alert>
