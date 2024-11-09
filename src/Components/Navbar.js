@@ -262,6 +262,7 @@ function DrawerAppBar(props) {
                         >
                             <MenuItem value="Any">Any</MenuItem>
                             <MenuItem value="Groceries">Groceries</MenuItem>
+                            <MenuItem value="Food & Drinks">Food & Drinks</MenuItem>
                             <MenuItem value="Household">Household</MenuItem>
                             <MenuItem value="Shopping">Shopping</MenuItem>
                             <MenuItem value="Entertainment">Entertainment</MenuItem>
@@ -270,9 +271,10 @@ function DrawerAppBar(props) {
                             <MenuItem value="Investment">Investment</MenuItem>
                             <MenuItem value="Salary">Salary</MenuItem>
                             <MenuItem value="Savings">Savings</MenuItem>
-                            <MenuItem value="Refunds">Refunds</MenuItem>
+                            <MenuItem value="Refund">Refund</MenuItem>
+                            <MenuItem value="Profit">Profit</MenuItem>
                             <MenuItem value="Returns">Returns</MenuItem>
-                            <MenuItem value="Earning">Others</MenuItem>
+                            <MenuItem value="Others">Others</MenuItem>
                         </TextField>
                     </Box>
                 </DialogContent>

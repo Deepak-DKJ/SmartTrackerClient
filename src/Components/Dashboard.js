@@ -467,15 +467,31 @@ const Dashboard = () => {
                         <MenuItem value={"Earning"}>Earning</MenuItem>
                       </TextField>
 
+                  
                       <TextField
+                        select
                         fullWidth
                         label="Category"
                         value={selectedItemCat}
                         onChange={(e) => setSelectedItemCat(e.target.value)}
                         style={{ marginBottom: "20px", marginTop: "20px" }}
-                        variant='outlined'
-                        sx={{ display: "none" }}
-                      />
+                      >
+                        <MenuItem value="Any">Any</MenuItem>
+                        <MenuItem value="Groceries">Groceries</MenuItem>
+                        <MenuItem value="Food & Drinks">Food & Drinks</MenuItem>
+                        <MenuItem value="Household">Household</MenuItem>
+                        <MenuItem value="Shopping">Shopping</MenuItem>
+                        <MenuItem value="Entertainment">Entertainment</MenuItem>
+                        <MenuItem value="Travel & Fuel">Travel & Fuel</MenuItem>
+                        <MenuItem value="Healthcare">Healthcare</MenuItem>
+                        <MenuItem value="Investment">Investment</MenuItem>
+                        <MenuItem value="Salary">Salary</MenuItem>
+                        <MenuItem value="Savings">Savings</MenuItem>
+                        <MenuItem value="Refund">Refund</MenuItem>
+                        <MenuItem value="Profit">Profit</MenuItem>
+                        <MenuItem value="Returns">Returns</MenuItem>
+                        <MenuItem value="Others">Others</MenuItem>
+                      </TextField>
                     </Box>
                   </DialogContent>
                   <Box
