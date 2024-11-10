@@ -1,5 +1,5 @@
 {
-  "short_name": "Smart Tracker",
+  "short_name": "SmrtTrackr",
   "name": "AI based Expense/Earning tracking",
   "icons": [
     {
@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "smarttracker.png",
+      "src": "smarttracker2.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "smarttracker.png",
+      "src": "smarttracker2.png",
       "type": "image/png",
       "sizes": "512x512"
     }
