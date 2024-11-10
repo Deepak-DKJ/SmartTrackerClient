@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from 'react'
 import { TrackerContext } from '../Context/TrackerContext';
 import { Box, CircularProgress, Container, Typography, Grid, Card, CardContent, TextField } from '@mui/material';
 import { green, grey } from '@mui/material/colors';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SellIcon from '@mui/icons-material/Sell';
 import { styled, ThemeProvider } from '@mui/material/styles';
@@ -22,6 +21,14 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from '@mui/material/IconButton'
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
+import { MobileDatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="down" ref={ref} {...props} />;
 });
@@ -173,100 +180,112 @@ const Dashboard = () => {
   };
 
   const handleCloseFilterModal = () => {
+    setEdit(false)
     setOpenFilterModal(false);
   };
 
   const handleEditItem = async () => {
     if (selectedItemName === "") {
-      setAlert({
-        vis: true,
-        msg: "Item Name cannot be blank!",
-      })
+      setAlert({ vis: true, msg: "Item Name cannot be blank!" });
+      return;
+    } else if (selectedItemQn === "") {
+      setAlert({ vis: true, msg: "Item Quantity cannot be empty!" });
+      return;
+    } else if (selectedItemType === "") {
+      setAlert({ vis: true, msg: "Item Type cannot be blank!" });
+      return;
+    } else if (selectedItemCat === "") {
+      setAlert({ vis: true, msg: "Item Category cannot be blank!" });
       return;
     }
-    else if (selectedItemQn === "") {
-      setAlert({
-        vis: true,
-        msg: "Item Quantity cannot be empty!",
-      })
-      return;
-    }
-    else if (selectedItemType === "") {
-      setAlert({
-        vis: true,
-        msg: "Item Type cannot be blank!",
-      })
-      return;
-    }
-    else if (selectedItemCat === "") {
-      setAlert({
-        vis: true,
-        msg: "Item Category cannot be blank!",
-      })
-      return;
-    }
-
-    // Retrieve the current list of entries for the selected date
-    const entriesForDate = items[selectedItemDate] || [];
-
+  
+    // Retrieve the current list of entries for the original date
+    const originalDate = originalSelectedItemDate
+    const updatedDate = getStringDate(new Date(selectedItemDate));
+    const entriesForOriginalDate = items[originalDate] || [];
+    
     // Find the index of the item to update
-    const itemIndex = entriesForDate.findIndex(entry => entry.itemId === selectedItemId);
-
+    const itemIndex = entriesForOriginalDate.findIndex(entry => entry.itemId === selectedItemId);
+  
     if (itemIndex !== -1) {
       // Create a new entry with updated values
       const updatedEntry = {
-        ...entriesForDate[itemIndex],
+        ...entriesForOriginalDate[itemIndex],
         itemName: selectedItemName,
         quantity: selectedItemQn,
         totalPrice: selectedItemAmt,
         type: selectedItemType,
         category: selectedItemCat,
       };
-
-      // Create a new list with the updated entry
-      const updatedEntriesForDate = [
-        ...entriesForDate.slice(0, itemIndex),
-        updatedEntry,
-        ...entriesForDate.slice(itemIndex + 1),
-      ];
-
-      // Update the items state with the modified list for the specific date
-      setItems(prevItems => ({
-        ...prevItems,
-        [selectedItemDate]: updatedEntriesForDate,
-      }));
-
-      setAlert({
-        vis: true,
-        msg: "Saved successfully!",
-      })
-
+  
+      if (originalDate === updatedDate) {
+        // Update the entry in the same date list if the date hasn't changed
+        const updatedEntriesForDate = [
+          ...entriesForOriginalDate.slice(0, itemIndex),
+          updatedEntry,
+          ...entriesForOriginalDate.slice(itemIndex + 1),
+        ];
+  
+        // Update the items state with the modified list for the specific date
+        setItems(prevItems => ({
+          ...prevItems,
+          [originalDate]: updatedEntriesForDate,
+        }));
+      } else {
+        // If the date has changed, remove the item from the original date and add it to the new date
+        const updatedEntriesForOriginalDate = [
+          ...entriesForOriginalDate.slice(0, itemIndex),
+          ...entriesForOriginalDate.slice(itemIndex + 1),
+        ];
+  
+        const entriesForUpdatedDate = items[updatedDate] || [];
+        const updatedEntriesForUpdatedDate = [...entriesForUpdatedDate, updatedEntry];
+  
+        setItems(prevItems => {
+          const newItems = { ...prevItems };
+  
+          // If the original date now has no entries, remove it from the state
+          if (updatedEntriesForOriginalDate.length === 0) {
+            delete newItems[originalDate];
+          } else {
+            newItems[originalDate] = updatedEntriesForOriginalDate;
+          }
+  
+          // Update the new date's entries
+          newItems[updatedDate] = updatedEntriesForUpdatedDate;
+  
+          return newItems;
+        });
+      }
+  
+      setAlert({ vis: true, msg: "Saved successfully!" });
     } else {
-      console.error(`Item with ID ${selectedItemId} not found for date ${selectedItemDate}`);
+      console.error(`Item with ID ${selectedItemId} not found for date ${originalSelectedItemDate}`);
     }
+    // console.log(updatedDate)
     handleCloseFilterModal();
-
-    // Api call to edit in db
+  
+    // API call to edit in db
     const data = {
       name: selectedItemName,
       amt: selectedItemAmt,
       quant: selectedItemQn,
       type: selectedItemType,
-      catry: selectedItemCat
-    }
+      catry: selectedItemCat,
+      date: new Date(dayjs(updatedDate, 'DD/MM/YYYY')) // Send updated date to the backend
+    };
     let authToken = localStorage.getItem("token");
     try {
-      const response = await axios.put(`${baseUrl}/items/updateitem/${selectedItemId}`, data, {
+      await axios.put(`${baseUrl}/items/updateitem/${selectedItemId}`, data, {
         headers: {
-          Token: authToken, // Set the Authorization header with Bearer token
+          Token: authToken,
         },
       });
-    }
-    catch (err) {
+    } catch (err) {
       console.log("Error: ", err);
     }
-
-  }
+  };
+  
 
   const [selectedItemId, setSelectedItemId] = useState("")
 
@@ -275,7 +294,8 @@ const Dashboard = () => {
   const [selectedItemQn, setSelectedItemQn] = useState("")
   const [selectedItemCat, setSelectedItemCat] = useState("")
   const [selectedItemAmt, setSelectedItemAmt] = useState(0)
-  const [selectedItemDate, setSelectedItemDate] = useState("")
+  const [originalSelectedItemDate, SetOriginalSelectedItemDate] = useState("")
+  const [selectedItemDate, setSelectedItemDate] = useState(dayjs("01/01/2024", 'DD/MM/YYYY'))
   const [alert, setAlert] = useState({
     vis: false,
     msg: "",
@@ -335,7 +355,8 @@ const Dashboard = () => {
 
     }
   }
-
+  const [edit, setEdit] = useState(false)
+  
   return (
     <Container sx={{
       padding: '0px',
@@ -413,20 +434,49 @@ const Dashboard = () => {
                     },
                   }}
                 >
-                  {/* <DialogTitle>Edit entry details</DialogTitle> */}
+
                   <DialogTitle>
-                    Edit entry details
+                    {edit === true ? "Start editing below..." : "Entry Details"}
+
+                    <IconButton
+                      edge="end"
+                      color=""
+                      onClick={() => setEdit(!edit)}
+                      style={{ position: 'absolute', right: 55, top: 13 }}
+                    >
+                      {edit === true ? <BorderColorIcon /> : <BorderColorOutlinedIcon />}
+                    </IconButton>
+
+
                     <IconButton
                       edge="end"
                       color=""
                       onClick={() => setOpen(true)}
-                      style={{ position: 'absolute', right: 25, top: 13 }}
+                      style={{ position: 'absolute', right: 20, top: 13 }}
                     >
                       <DeleteIcon />
                     </IconButton>
                   </DialogTitle>
                   <DialogContent>
                     <Box>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <Box sx={{ width: '100%', textAlign: 'center', marginTop: '15px' }}>
+                      <MobileDatePicker
+                        sx={{ textAlign: 'center', marginTop: '0px' }}
+                        // fullWidth
+                        label="Date of entry"
+                        value={selectedItemDate}
+                        closeOnSelect={true}
+                        onChange={(date) => setSelectedItemDate(date)}
+                        format="DD MMM, YYYY"
+                        disableFuture={true}
+                        disabled={!edit}
+                        slotProps={{
+                          textField: { fullWidth: true } // Ensure TextField inside MobileDatePicker is full width
+                        }}
+                      />
+                      </Box>
+                    </LocalizationProvider>
                       <TextField
                         fullWidth
                         label="Item Name"
@@ -434,6 +484,7 @@ const Dashboard = () => {
                         onChange={(e) => setSelectedItemName(e.target.value)}
                         style={{ marginBottom: "0px", marginTop: "20px" }}
                         variant='outlined'
+                        disabled={!edit}
                       />
 
                       <TextField style={{ marginBottom: "0px", marginTop: "20px" }}
@@ -443,7 +494,7 @@ const Dashboard = () => {
                         label="Amount (in rupees)"
                         value={selectedItemAmt}
                         onChange={(e) => setSelectedItemAmt(Number(e.target.value))}
-
+                        disabled={!edit}
                       />
 
                       <TextField
@@ -453,6 +504,7 @@ const Dashboard = () => {
                         onChange={(e) => setSelectedItemQn(e.target.value)}
                         style={{ marginBottom: "0px", marginTop: "20px" }}
                         variant='outlined'
+                        disabled={!edit}
                       />
 
                       <TextField
@@ -460,6 +512,7 @@ const Dashboard = () => {
                         fullWidth
                         label="Type Earning/Expense"
                         value={selectedItemType}
+                        disabled={!edit}
                         onChange={(e) => setSelectedItemType(e.target.value)}
                         style={{ marginBottom: "0px", marginTop: "20px" }}
                       >
@@ -467,11 +520,12 @@ const Dashboard = () => {
                         <MenuItem value={"Earning"}>Earning</MenuItem>
                       </TextField>
 
-                  
+
                       <TextField
                         select
                         fullWidth
                         label="Category"
+                        disabled={!edit}
                         value={selectedItemCat}
                         onChange={(e) => setSelectedItemCat(e.target.value)}
                         style={{ marginBottom: "20px", marginTop: "20px" }}
@@ -505,19 +559,21 @@ const Dashboard = () => {
                       variant="contained"
                       sx={{ marginBottom: "20px", backgroundColor: '#B0B0B0', color: 'black' }}
                     >
-                      cancel
+                      close
                     </Button>
 
-                    <Button
-                      onClick={() => {
-                        handleEditItem();
-                      }}
-                      color="primary"
-                      variant="contained"
-                      sx={{ marginBottom: "20px", ml: 2.5 }}
-                    >
-                      Save
-                    </Button>
+                    {edit === true && (
+                      <Button
+                        onClick={() => {
+                          handleEditItem();
+                        }}
+                        color="primary"
+                        variant="contained"
+                        sx={{ marginBottom: "20px", ml: 2.5 }}
+                      >
+                        Save
+                      </Button>
+                    )}
                   </Box>
                 </Dialog>
 
@@ -543,7 +599,8 @@ const Dashboard = () => {
                                     <Card onClick={() => {
                                       setSelectedItemId(item.itemId)
                                       setSelectedItemName(item.itemName)
-                                      setSelectedItemDate(date)
+                                      SetOriginalSelectedItemDate(date)
+                                      setSelectedItemDate(dayjs(date, 'DD/MM/YYYY'))
                                       setSelectedItemAmt(item.totalPrice)
                                       setSelectedItemCat(item.category)
                                       setSelectedItemQn(item.quantity)
@@ -573,8 +630,8 @@ const Dashboard = () => {
                                           alignItems="center"
                                           justifyContent="center"
                                           sx={{
-                                            bgcolor: 'cyan',
-                                            color: 'black',
+                                            bgcolor: item.type === 'Expense' ? 'cyan' : 'rgb(57,255,20)',
+                                            color: item.type === 'Expense' ? 'black' : 'black',
                                             borderRadius: 2,
                                             fontWeight: "bold",
                                             padding: '6px',

@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Box, Snackbar, Alert } from '
 import { MobileDatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 
+import Tooltip from '@mui/material/Tooltip';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
@@ -200,9 +201,9 @@ function CreateItem() {
             </Typography> */}
 
             <Box sx={{ textAlign: 'center', mb: 0,  minHeight: '33vh' }}>
-            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="88%"/>
+              <img src="/smarttracker.png" alt="TestGen.AI Logo" width="88%"/>
             </Box>
-          
+              
             <TextField
               label="Provide Income/Expense Details here"
               placeholder="e.g: ek litre dudh assi rupay . . ."
@@ -215,7 +216,7 @@ function CreateItem() {
               required
               sx={{ bgcolor: 'background.paper', borderRadius: '4px'}}
             />
-            {/* <Box sx={{backgroundColor:"#"}}> */}
+            
             <MobileDatePicker
             sx={{backgroundColor:'#1e1e1e', textAlign:'center', marginTop:'20px' }}
               label="Select Date"
@@ -225,7 +226,7 @@ function CreateItem() {
               format="DD MMM, YYYY" 
               disableFuture={true}
             />
-            {/* </Box> */}
+            
             <Button
               variant="contained"
               onClick={handleSubmit}
