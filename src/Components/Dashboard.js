@@ -309,7 +309,7 @@ const Dashboard = () => {
   const handleDeleteItem = async () => {
     setItems(prevItems => {
       // Get the list of entries for the selected date
-      const entriesForDate = prevItems[selectedItemDate] || [];
+      const entriesForDate = prevItems[originalSelectedItemDate] || [];
 
       // Filter out the item with selectedItemId
       const updatedEntriesForDate = entriesForDate.filter(entry => entry.itemId !== selectedItemId);
@@ -317,7 +317,7 @@ const Dashboard = () => {
       // Update the items state with the modified list for the specific date
       return {
         ...prevItems,
-        [selectedItemDate]: updatedEntriesForDate,
+        [originalSelectedItemDate]: updatedEntriesForDate,
       };
     });
     setOpenFilterModal(false)
