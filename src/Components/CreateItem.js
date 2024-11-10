@@ -8,6 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
 import { TrackerContext } from '../Context/TrackerContext';
 import { SwapSpinner } from 'react-spinners-kit';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 const getStringDate = (date) => {
   // const date = new Date();
   const dd = String(date.getDate()).padStart(2, '0');
@@ -229,6 +230,7 @@ function CreateItem() {
               variant="contained"
               onClick={handleSubmit}
               sx={{ bgcolor: 'primary.main', padding: '10px', fontSize: '1.1em', marginTop:'30px' }}
+              startIcon={<AutoAwesomeIcon />}
             >
               create
             </Button>
