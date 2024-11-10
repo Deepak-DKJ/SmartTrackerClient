@@ -26,7 +26,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, TextField } from '@mui/material';
+import { DialogActions, TextField, Tooltip } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -328,7 +328,16 @@ function DrawerAppBar(props) {
                                 <Typography variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
-                                {searchString === "" ? (<FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />) : ( <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />)}
+                                {searchString === "" ? (
+                                    <Tooltip title="Filters" arrow>
+                                    <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                    </Tooltip>
+                                    ) : ( 
+                                        <Tooltip title="Clear" arrow>
+                                    <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                    </Tooltip>
+                                    )
+                                }
 
                                 <Search sx={{ marginLeft: 'auto' }}>
                                     <SearchIconWrapper>

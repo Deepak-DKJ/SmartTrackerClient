@@ -1,7 +1,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { TrackerContext } from '../Context/TrackerContext';
-import { Box, CircularProgress, Container, Typography, Grid, Card, CardContent, TextField } from '@mui/material';
+import { Box, CircularProgress, Container, Typography, Grid, Card, CardContent, TextField, Tooltip } from '@mui/material';
 import { green, grey } from '@mui/material/colors';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SellIcon from '@mui/icons-material/Sell';
@@ -437,7 +437,7 @@ const Dashboard = () => {
 
                   <DialogTitle>
                     {edit === true ? "Start editing below..." : "Entry Details"}
-
+                    <Tooltip title="Edit" arrow>
                     <IconButton
                       edge="end"
                       color=""
@@ -446,8 +446,9 @@ const Dashboard = () => {
                     >
                       {edit === true ? <BorderColorIcon /> : <BorderColorOutlinedIcon />}
                     </IconButton>
+                    </Tooltip>
 
-
+                    <Tooltip title="Delete" arrow>
                     <IconButton
                       edge="end"
                       color=""
@@ -456,6 +457,7 @@ const Dashboard = () => {
                     >
                       <DeleteIcon />
                     </IconButton>
+                    </Tooltip>
                   </DialogTitle>
                   <DialogContent>
                     <Box>
