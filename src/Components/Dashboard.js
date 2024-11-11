@@ -5,6 +5,8 @@ import { Box, CircularProgress, Container, Typography, Grid, Card, CardContent, 
 import { green, grey } from '@mui/material/colors';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SellIcon from '@mui/icons-material/Sell';
+
+import utc from 'dayjs/plugin/utc';
 import { styled, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
@@ -28,7 +30,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-
+dayjs.extend(utc);
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="down" ref={ref} {...props} />;
 });
@@ -198,15 +200,17 @@ const Dashboard = () => {
       setAlert({ vis: true, msg: "Item Category cannot be blank!" });
       return;
     }
-  
+
+    // console.log(originalSelectedItemDate)
     // Retrieve the current list of entries for the original date
     const originalDate = originalSelectedItemDate
     const updatedDate = getStringDate(new Date(selectedItemDate));
+    // console.log(updatedDate)
     const entriesForOriginalDate = items[originalDate] || [];
-    
+
     // Find the index of the item to update
     const itemIndex = entriesForOriginalDate.findIndex(entry => entry.itemId === selectedItemId);
-  
+
     if (itemIndex !== -1) {
       // Create a new entry with updated values
       const updatedEntry = {
@@ -216,8 +220,9 @@ const Dashboard = () => {
         totalPrice: selectedItemAmt,
         type: selectedItemType,
         category: selectedItemCat,
+        desc:selectedItemDesc
       };
-  
+
       if (originalDate === updatedDate) {
         // Update the entry in the same date list if the date hasn't changed
         const updatedEntriesForDate = [
@@ -225,7 +230,7 @@ const Dashboard = () => {
           updatedEntry,
           ...entriesForOriginalDate.slice(itemIndex + 1),
         ];
-  
+
         // Update the items state with the modified list for the specific date
         setItems(prevItems => ({
           ...prevItems,
@@ -237,34 +242,34 @@ const Dashboard = () => {
           ...entriesForOriginalDate.slice(0, itemIndex),
           ...entriesForOriginalDate.slice(itemIndex + 1),
         ];
-  
+
         const entriesForUpdatedDate = items[updatedDate] || [];
         const updatedEntriesForUpdatedDate = [...entriesForUpdatedDate, updatedEntry];
-  
+
         setItems(prevItems => {
           const newItems = { ...prevItems };
-  
+
           // If the original date now has no entries, remove it from the state
           if (updatedEntriesForOriginalDate.length === 0) {
             delete newItems[originalDate];
           } else {
             newItems[originalDate] = updatedEntriesForOriginalDate;
           }
-  
+
           // Update the new date's entries
           newItems[updatedDate] = updatedEntriesForUpdatedDate;
-  
+
           return newItems;
         });
       }
-  
+
       setAlert({ vis: true, msg: "Saved successfully!" });
     } else {
       console.error(`Item with ID ${selectedItemId} not found for date ${originalSelectedItemDate}`);
     }
     // console.log(updatedDate)
     handleCloseFilterModal();
-  
+
     // API call to edit in db
     const data = {
       name: selectedItemName,
@@ -272,7 +277,8 @@ const Dashboard = () => {
       quant: selectedItemQn,
       type: selectedItemType,
       catry: selectedItemCat,
-      date: new Date(dayjs(updatedDate, 'DD/MM/YYYY')) // Send updated date to the backend
+      desc: selectedItemDesc,
+      date: new Date(dayjs(updatedDate, 'DD/MM/YYYY').utc().format()) // Send updated date to the backend
     };
     let authToken = localStorage.getItem("token");
     try {
@@ -285,11 +291,12 @@ const Dashboard = () => {
       console.log("Error: ", err);
     }
   };
-  
+
 
   const [selectedItemId, setSelectedItemId] = useState("")
 
   const [selectedItemName, setSelectedItemName] = useState("")
+  const [selectedItemDesc, setSelectedItemDesc] = useState("")
   const [selectedItemType, setSelectedItemType] = useState("")
   const [selectedItemQn, setSelectedItemQn] = useState("")
   const [selectedItemCat, setSelectedItemCat] = useState("")
@@ -309,15 +316,20 @@ const Dashboard = () => {
   const handleDeleteItem = async () => {
     setItems(prevItems => {
       // Get the list of entries for the selected date
-      const entriesForDate = prevItems[selectedItemDate] || [];
+      const entriesForDate = prevItems[originalSelectedItemDate] || [];
 
       // Filter out the item with selectedItemId
       const updatedEntriesForDate = entriesForDate.filter(entry => entry.itemId !== selectedItemId);
 
+      // If there are no more entries for this date, omit the date key from the state
+      if (updatedEntriesForDate.length === 0) {
+        const { [originalSelectedItemDate]: _, ...remainingItems } = prevItems;
+        return remainingItems;
+      }
       // Update the items state with the modified list for the specific date
       return {
         ...prevItems,
-        [selectedItemDate]: updatedEntriesForDate,
+        [originalSelectedItemDate]: updatedEntriesForDate,
       };
     });
     setOpenFilterModal(false)
@@ -356,7 +368,7 @@ const Dashboard = () => {
     }
   }
   const [edit, setEdit] = useState(false)
-  
+
   return (
     <Container sx={{
       padding: '0px',
@@ -438,58 +450,70 @@ const Dashboard = () => {
                   <DialogTitle>
                     {edit === true ? "Start editing below..." : "Entry Details"}
                     <Tooltip title="Edit" arrow>
-                    <IconButton
-                      edge="end"
-                      color=""
-                      onClick={() => setEdit(!edit)}
-                      style={{ position: 'absolute', right: 55, top: 13 }}
-                    >
-                      {edit === true ? <BorderColorIcon /> : <BorderColorOutlinedIcon />}
-                    </IconButton>
+                      <IconButton
+                        edge="end"
+                        color=""
+                        onClick={() => setEdit(!edit)}
+                        style={{ position: 'absolute', right: 55, top: 13 }}
+                      >
+                        {edit === true ? <BorderColorIcon /> : <BorderColorOutlinedIcon />}
+                      </IconButton>
                     </Tooltip>
 
                     <Tooltip title="Delete" arrow>
-                    <IconButton
-                      edge="end"
-                      color=""
-                      onClick={() => setOpen(true)}
-                      style={{ position: 'absolute', right: 20, top: 13 }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                      <IconButton
+                        edge="end"
+                        color=""
+                        onClick={() => setOpen(true)}
+                        style={{ position: 'absolute', right: 20, top: 13 }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </Tooltip>
                   </DialogTitle>
                   <DialogContent>
                     <Box>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <Box sx={{ width: '100%', textAlign: 'center', marginTop: '15px' }}>
-                      <MobileDatePicker
-                        sx={{ textAlign: 'center', marginTop: '0px' }}
-                        // fullWidth
-                        label="Date of entry"
-                        value={selectedItemDate}
-                        closeOnSelect={true}
-                        onChange={(date) => setSelectedItemDate(date)}
-                        format="DD MMM, YYYY"
-                        disableFuture={true}
-                        disabled={!edit}
-                        slotProps={{
-                          textField: { fullWidth: true } // Ensure TextField inside MobileDatePicker is full width
-                        }}
-                      />
-                      </Box>
-                    </LocalizationProvider>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <Box sx={{ width: '100%', textAlign: 'center', marginTop: '10px' }}>
+                          <MobileDatePicker
+                            sx={{ textAlign: 'center', marginTop: '0px' }}
+                            // fullWidth
+                            label="Date of entry"
+                            value={selectedItemDate}
+                            closeOnSelect={true}
+                            onChange={(date) => setSelectedItemDate(date)}
+                            format="DD MMM, YYYY"
+                            disableFuture={true}
+                            disabled={!edit}
+                            slotProps={{
+                              textField: { fullWidth: true } // Ensure TextField inside MobileDatePicker is full width
+                            }}
+                          />
+                        </Box>
+                      </LocalizationProvider>
                       <TextField
                         fullWidth
                         label="Item Name"
                         value={selectedItemName}
                         onChange={(e) => setSelectedItemName(e.target.value)}
-                        style={{ marginBottom: "0px", marginTop: "20px" }}
+                        style={{ marginBottom: "0px", marginTop: "17px" }}
                         variant='outlined'
                         disabled={!edit}
                       />
+        
+                      <TextField
+                        label="Item Notes"
+                        multiline
+                        maxRows={4}
+                        value={selectedItemDesc}
+                        onChange={(e) => setSelectedItemDesc(e.target.value)}
+                        variant="outlined"
+                        fullWidth
+                        sx={{ marginBottom: "0px", marginTop: "17px"}}
+                        disabled={!edit}
+                      />
 
-                      <TextField style={{ marginBottom: "0px", marginTop: "20px" }}
+                      <TextField style={{ marginBottom: "0px", marginTop: "17px" }}
                         fullWidth
                         type="number"
                         id="outlined-number"
@@ -504,7 +528,7 @@ const Dashboard = () => {
                         label="Quantity"
                         value={selectedItemQn}
                         onChange={(e) => setSelectedItemQn(e.target.value)}
-                        style={{ marginBottom: "0px", marginTop: "20px" }}
+                        style={{ marginBottom: "0px", marginTop: "17px" }}
                         variant='outlined'
                         disabled={!edit}
                       />
@@ -516,7 +540,7 @@ const Dashboard = () => {
                         value={selectedItemType}
                         disabled={!edit}
                         onChange={(e) => setSelectedItemType(e.target.value)}
-                        style={{ marginBottom: "0px", marginTop: "20px" }}
+                        style={{ marginBottom: "0px", marginTop: "17px" }}
                       >
                         <MenuItem value={"Expense"}>Expense</MenuItem>
                         <MenuItem value={"Earning"}>Earning</MenuItem>
@@ -530,7 +554,7 @@ const Dashboard = () => {
                         disabled={!edit}
                         value={selectedItemCat}
                         onChange={(e) => setSelectedItemCat(e.target.value)}
-                        style={{ marginBottom: "20px", marginTop: "20px" }}
+                        style={{ marginBottom: "20px", marginTop: "17px" }}
                       >
                         <MenuItem value="Any">Any</MenuItem>
                         <MenuItem value="Groceries">Groceries</MenuItem>
@@ -551,7 +575,7 @@ const Dashboard = () => {
                     </Box>
                   </DialogContent>
                   <Box
-                    sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                    sx={{ display: 'flex', justifyContent: 'center', width: '100%' , marginTop:"10px"}}
                   >
                     <Button
                       onClick={() => {
@@ -607,7 +631,7 @@ const Dashboard = () => {
                                       setSelectedItemCat(item.category)
                                       setSelectedItemQn(item.quantity)
                                       setSelectedItemType(item.type)
-
+                                      setSelectedItemDesc(item.desc || "")
                                       handleOpenFilterModal();
                                     }}
 

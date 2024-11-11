@@ -259,6 +259,7 @@ function DrawerAppBar(props) {
                             value={catType}
                             onChange={(e) => setCatType(e.target.value)}
                             style={{ marginBottom: "15px" }}
+                            
                         >
                             <MenuItem value="Any">Any</MenuItem>
                             <MenuItem value="Groceries">Groceries</MenuItem>
