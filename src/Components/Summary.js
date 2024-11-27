@@ -175,6 +175,11 @@ const Summary = () => {
   const [customStartDate, setCustomStartDate] = useState(dayjs());
   const [customEndDate, setCustomEndDate] = useState(dayjs());
 
+  
+  useEffect(() => {
+    fetchChartsAndSummary();
+  }, [duration, customStartDate, customEndDate, rangeType])
+
   const handleRangeChange = (event) => {
     setRangeType(event.target.value);
   };
@@ -285,18 +290,18 @@ const Summary = () => {
               />
             </Box>
           )}
-          <Button
+          {/* <Button
             variant="contained"
 
             onClick={fetchChartsAndSummary}
             sx={{ width: "55%", margin: "20px" }}
           >
             Generate Reports
-          </Button>
+          </Button> */}
         </Box>
 
         {/* Bottom Section - Placeholder for Summary & Charts */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: "10px" }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: "20px" }}>
 
           {/* Bottom Section - Summary & Charts */}
           <Box sx={{ width: "94%", maxWidth: "600px" }}>
@@ -319,7 +324,7 @@ const Summary = () => {
               </AppBar>
 
               {/* Tab Panels */}
-              <Box p={2} sx={{ width: "100%", height: '53vh', paddingBottom: '10px', overflowY: 'auto' }}>
+              <Box p={1.5} sx={{ width: "100%", height: '62vh', paddingBottom: '10px', overflowY: 'auto' }}>
                 {value === 0 && (
                   <>
 
@@ -327,7 +332,7 @@ const Summary = () => {
                       <h6 style={{ textAlign: "center" }}>No Entries found!</h6>
                     ) : (
                       <>
-                        <div style={{ width: '100%', maxWidth: 400, height: '41vh', margin: 'auto' }}>
+                        <div style={{ width: '100%', maxWidth: 400, height: '50vh', margin: 'auto' }}>
 
                           <Line
                             data={{
@@ -409,7 +414,7 @@ const Summary = () => {
                     ) : (
                       <>
                         <Box >
-                          <TableContainer component={Paper} sx={{ height: "41vh" }}>
+                          <TableContainer component={Paper} sx={{ height: "50vh" }}>
                             <Table  stickyHeader aria-label="item summary table">
                               <TableHead>
                                 <TableRow>

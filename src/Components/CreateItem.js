@@ -2,11 +2,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { TextField, Button, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { MobileDatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import useSpeechToText from 'react-hook-speech-to-text';
 
 import Tooltip from '@mui/material/Tooltip';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
+import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 import { TrackerContext } from '../Context/TrackerContext';
 import { SwapSpinner } from 'react-spinners-kit';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -26,6 +28,17 @@ function CreateItem() {
   const [aiMsg, setAiMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
+
+  const {
+    error,
+    interimResult,
+    isRecording,
+    startSpeechToText,
+    stopSpeechToText,
+  } = useSpeechToText({
+    continuous: true,
+    useLegacyResults: false
+  });
 
   const handleInputChange = (e) => {
     setInputMsg(e.target.value);
@@ -49,7 +62,7 @@ function CreateItem() {
     setOpen(false);
   };
 
-  const handleClose2= (event, reason) => {
+  const handleClose2 = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
@@ -71,7 +84,9 @@ function CreateItem() {
             Token: authToken, // Set the Authorization header with Bearer token
           },
         });
+        // console.log(response.data)
         const dat = response.data
+        // console.log(dat)
         setItems(dat)
       }
       catch (err) {
@@ -83,9 +98,8 @@ function CreateItem() {
   }, [items])
 
   const [isLoading, setIsLoading] = useState(false)
-  const handleSubmit =  async() => {
-    if(inputMsg === "")
-    {
+  const handleSubmit = async () => {
+    if (inputMsg === "") {
       setAiMsg("Please enter the missing details!")
       const btn = document.getElementById("infosnackbar");
       if (btn) btn.click();
@@ -107,7 +121,7 @@ function CreateItem() {
         headers: {
           Token: authToken, // Set the Authorization header with Bearer token
           withCredentials: true,
-          "Access-Control-Allow-Origin": "*", 
+          "Access-Control-Allow-Origin": "*",
         },
       });
       const dat = response.data;
@@ -115,12 +129,12 @@ function CreateItem() {
       setItems({});
       setInputMsg("")
       setSelectedDate(dayjs())
-      
+
       setIsLoading(false);
       setSuccessMsg("Entry added successfully!")
       const btn = document.getElementById("successsnackbar");
       if (btn) btn.click();
-      
+
     } catch (err) {
       setIsLoading(false);
       // console.log("Error1: ", err);
@@ -133,28 +147,42 @@ function CreateItem() {
     }
   };
 
+  useEffect(() => {
+    // console.log(interimResult)
+    if (interimResult !== undefined)
+      setInputMsg(interimResult)
+    else stopSpeechToText()
+  }, [interimResult])
+  // Clear inputMsg when recording starts
+  useEffect(() => {
+    if (isRecording) {
+      setInputMsg("");
+    }
+  }, [isRecording]);
+
+
   return (
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <>
         {isLoading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark overlay with less opacity
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1300, // Ensure it overlays other elements
-          }}
-        >
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark overlay with less opacity
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1300, // Ensure it overlays other elements
+            }}
+          >
             <SwapSpinner size={50} color="cyan" />
-        </Box>
-      )}
-        </>
+          </Box>
+        )}
+      </>
 
       <Button
         id="infosnackbar"
@@ -176,8 +204,8 @@ function CreateItem() {
           onClose={handleClose}
           severity="info"
           variant="filled"
-          sx={{ width: "96%", color: "white", position:"fixed", top:"8.4vh", textAlign:'center' }}
-          // sx={{ width: "100%", color: "white" }}
+          sx={{ width: "96%", color: "white", position: "fixed", top: "8.4vh", textAlign: 'center' }}
+        // sx={{ width: "100%", color: "white" }}
         >
           {aiMsg}
         </Alert>
@@ -188,56 +216,91 @@ function CreateItem() {
           onClose={handleClose2}
           severity="success"
           variant="filled"
-          sx={{ width: "96%", color: "white", position:"fixed", top:"9.4vh", textAlign:'center' }}
+          sx={{ width: "96%", color: "white", position: "fixed", top: "8.2vh", textAlign: 'center' }}
         >
           {successMsg}
         </Alert>
       </Snackbar>
 
-        <Container sx={{ padding: '40px', maxWidth: '400px', minHeight: 'calc(100vh - 56px)', bgcolor: 'background.default' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {/* <Typography variant="h5" sx={{ color: 'primary.main', textAlign: 'center' }}>
+      <Container sx={{ padding: '40px', maxWidth: '400px', minHeight: 'calc(100vh - 56px)', bgcolor: 'background.default' }}>
+        {/* <Typography variant="h5" sx={{ color: 'primary.main', textAlign: 'center' }}>
               ADD ENTRY
             </Typography> */}
 
-            <Box sx={{ textAlign: 'center', mb: 0,  minHeight: '33vh' }}>
-              <img src="/smarttracker.png" alt="TestGen.AI Logo" width="88%"/>
-            </Box>
-              
-            <TextField
-              label="Provide Income/Expense Details here"
-              placeholder="e.g: ek litre dudh assi rupay . . ."
-              multiline
-              rows={4}
-              value={inputMsg}
-              onChange={handleInputChange}
-              variant="outlined"
-              fullWidth
-              required
-              sx={{ bgcolor: 'background.paper', borderRadius: '4px'}}
-            />
-            
-            <MobileDatePicker
-            sx={{backgroundColor:'#1e1e1e', textAlign:'center', marginTop:'20px' }}
-              label="Select Date"
-              value={selectedDate}
-              closeOnSelect={true}
-              onChange={handleDateChange}
-              format="DD MMM, YYYY" 
-              disableFuture={true}
-            />
-            
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              sx={{ bgcolor: 'primary.main', padding: '10px', fontSize: '1.1em', marginTop:'30px' }}
-              startIcon={<AutoAwesomeIcon />}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              position: 'relative',
+              mb: 4,
+              mt: 3
+            }}
+          >
+            <div
+              className={isRecording ? 'mic-container active' : 'mic-container'}
+              onClick={isRecording ? stopSpeechToText : startSpeechToText}
             >
-              create
-            </Button>
+              <KeyboardVoiceIcon
+                fontSize="large"
+                sx={{
+                  color: isRecording ? 'black' : 'cyan',
+                  backgroundColor: isRecording ? 'cyan' : 'black',
+                  borderRadius: '50%',
+                  p: 0,
+                  fontSize: isRecording === true ? "102px" : "85px",
+                  transition: 'background-color 0.3s ease, color 0.3s ease',
+                }}
+              />
+            </div>
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 6,
+                color: 'text.secondary',
+                fontSize: '14px',
+                textAlign: 'center',
+              }}
+            >
+              👆🏻 Tap the mic for voice-based input! 
+            </Typography>
           </Box>
-        </Container>
-      </LocalizationProvider>
+          <TextField
+            label={isRecording === true ? "Listening . . ." : "Provide Income/Expense Details here"}
+            placeholder="e.g: ek litre dudh assi rupay . . ."
+            multiline
+            rows={4}
+            value={inputMsg}
+            onChange={handleInputChange}
+            variant="outlined"
+            fullWidth
+            sx={{ bgcolor: 'background.paper', borderRadius: '4px' }}
+          />
+
+          <MobileDatePicker
+            sx={{ backgroundColor: '#1e1e1e', textAlign: 'center', marginTop: '25px' }}
+            label="Select Date"
+            value={selectedDate}
+            closeOnSelect={true}
+            onChange={handleDateChange}
+            format="DD MMM, YYYY"
+            disableFuture={true}
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            sx={{ bgcolor: 'primary.main', padding: '10px', fontSize: '1.1em', marginTop: '30px' }}
+            startIcon={<AutoAwesomeIcon />}
+          >
+            create
+          </Button>
+
+        </Box>
+      </Container>
+    </LocalizationProvider>
   );
 }
 
