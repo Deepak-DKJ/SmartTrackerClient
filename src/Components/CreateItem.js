@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { TextField, Button, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { MobileDatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import useSpeechToText from 'react-hook-speech-to-text';
 
 import Tooltip from '@mui/material/Tooltip';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -12,6 +11,7 @@ import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 import { TrackerContext } from '../Context/TrackerContext';
 import { SwapSpinner } from 'react-spinners-kit';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 const getStringDate = (date) => {
   // const date = new Date();
   const dd = String(date.getDate()).padStart(2, '0');
@@ -28,17 +28,12 @@ function CreateItem() {
   const [aiMsg, setAiMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
-
   const {
-    error,
-    interimResult,
-    isRecording,
-    startSpeechToText,
-    stopSpeechToText,
-  } = useSpeechToText({
-    continuous: true,
-    useLegacyResults: false
-  });
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   const handleInputChange = (e) => {
     setInputMsg(e.target.value);
@@ -98,6 +93,8 @@ function CreateItem() {
   }, [items])
 
   const [isLoading, setIsLoading] = useState(false)
+  const [lastTranscriptTime, setLastTranscriptTime] = useState(Date.now()); // Track last change time
+
   const handleSubmit = async () => {
     if (inputMsg === "") {
       setAiMsg("Please enter the missing details!")
@@ -147,18 +144,49 @@ function CreateItem() {
     }
   };
 
+
+  // Update inputMsg with transcript when it changes
   useEffect(() => {
-    // console.log(interimResult)
-    if (interimResult !== undefined)
-      setInputMsg(interimResult)
-    else stopSpeechToText()
-  }, [interimResult])
+    // console.log(transcript)
+    setInputMsg(transcript);
+    setLastTranscriptTime(Date.now());
+  }, [transcript]);
+  
   // Clear inputMsg when recording starts
   useEffect(() => {
-    if (isRecording) {
+    // console.log(listening)
+    if (listening) {
       setInputMsg("");
     }
-  }, [isRecording]);
+  }, [listening]);
+   // Automatically stop recognition after 5 seconds of inactivity
+   useEffect(() => {
+    const timeout = setTimeout(() => {
+      // If no transcript change in 5 seconds, simulate click on mic button
+      if (Date.now() - lastTranscriptTime > 2500) {
+        const btn = document.getElementById("mic");
+        if (btn) {
+          btn.click(); // Simulate a click to stop listening
+        }
+        else console.log("btn not found")
+      }
+    }, 2500);
+
+    // Clean up timeout on transcript change or on component unmount
+    return () => clearTimeout(timeout);
+  }, [lastTranscriptTime]);
+
+
+  const handleMicClick = () => {
+    if (listening) {
+      SpeechRecognition.stopListening();
+    } else {
+      resetTranscript();
+      SpeechRecognition.startListening({ continuous: true }); // Keep listening until user clicks to stop
+    }
+  };
+
+  
 
 
   return (
@@ -204,7 +232,7 @@ function CreateItem() {
           onClose={handleClose}
           severity="info"
           variant="filled"
-          sx={{ width: "96%", color: "white", position: "fixed", top: "8.4vh", textAlign: 'center' }}
+          sx={{ width: "96%", color: "white", position: "fixed", top: "8.2vh", textAlign: 'center' }}
         // sx={{ width: "100%", color: "white" }}
         >
           {aiMsg}
@@ -227,7 +255,7 @@ function CreateItem() {
               ADD ENTRY
             </Typography> */}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <Box
             sx={{
               display: 'flex',
@@ -239,22 +267,23 @@ function CreateItem() {
               mt: 3
             }}
           >
-            <div
-              className={isRecording ? 'mic-container active' : 'mic-container'}
-              onClick={isRecording ? stopSpeechToText : startSpeechToText}
-            >
-              <KeyboardVoiceIcon
-                fontSize="large"
-                sx={{
-                  color: isRecording ? 'black' : 'cyan',
-                  backgroundColor: isRecording ? 'cyan' : 'black',
-                  borderRadius: '50%',
-                  p: 0,
-                  fontSize: isRecording === true ? "102px" : "85px",
-                  transition: 'background-color 0.3s ease, color 0.3s ease',
-                }}
-              />
-            </div>
+            <div id="mic"
+        className={listening ? 'mic-container active' : 'mic-container'}
+        onClick={handleMicClick}
+      >
+        <KeyboardVoiceIcon
+          fontSize="large"
+          sx={{
+            color: listening ? 'black' : 'cyan',
+            backgroundColor: listening ? 'cyan' : 'black',
+            borderRadius: '50%',
+            p: 0,
+            fontSize: listening === true ? '95px' : '85px',
+            transition: 'background-color 0.3s ease, color 0.3s ease',
+          }}
+        />
+      </div>
+    
             <Typography
               variant="body2"
               sx={{
@@ -268,7 +297,7 @@ function CreateItem() {
             </Typography>
           </Box>
           <TextField
-            label={isRecording === true ? "Listening . . ." : "Provide Income/Expense Details here"}
+            label={listening === true ? "Listening . . ." : "Provide Income/Expense Details here"}
             placeholder="e.g: ek litre dudh assi rupay . . ."
             multiline
             rows={4}

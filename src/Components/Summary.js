@@ -324,7 +324,7 @@ const Summary = () => {
               </AppBar>
 
               {/* Tab Panels */}
-              <Box p={1.5} sx={{ width: "100%", height: '62vh', paddingBottom: '10px', overflowY: 'auto' }}>
+              <Box p={1.5} sx={{ width: "100%", height: '61vh', paddingBottom: '10px', overflowY: 'auto' }}>
                 {value === 0 && (
                   <>
 
@@ -332,7 +332,7 @@ const Summary = () => {
                       <h6 style={{ textAlign: "center" }}>No Entries found!</h6>
                     ) : (
                       <>
-                        <div style={{ width: '100%', maxWidth: 400, height: '50vh', margin: 'auto' }}>
+                        <div style={{ width: '100%', maxWidth: 400, height: '49.5vh', margin: 'auto' }}>
 
                           <Line
                             data={{
@@ -414,7 +414,7 @@ const Summary = () => {
                     ) : (
                       <>
                         <Box >
-                          <TableContainer component={Paper} sx={{ height: "50vh" }}>
+                          <TableContainer component={Paper} sx={{ height: "49.5vh" }}>
                             <Table  stickyHeader aria-label="item summary table">
                               <TableHead>
                                 <TableRow>
