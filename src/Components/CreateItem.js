@@ -93,9 +93,11 @@ function CreateItem() {
   }, [items])
 
   const [isLoading, setIsLoading] = useState(false)
-  const [lastTranscriptTime, setLastTranscriptTime] = useState(Date.now()); // Track last change time
 
   const handleSubmit = async () => {
+    if (listening) {
+      SpeechRecognition.stopListening();
+    } 
     if (inputMsg === "") {
       setAiMsg("Please enter the missing details!")
       const btn = document.getElementById("infosnackbar");
@@ -149,7 +151,6 @@ function CreateItem() {
   useEffect(() => {
     // console.log(transcript)
     setInputMsg(transcript);
-    setLastTranscriptTime(Date.now());
   }, [transcript]);
   
   // Clear inputMsg when recording starts
@@ -159,22 +160,6 @@ function CreateItem() {
       setInputMsg("");
     }
   }, [listening]);
-   // Automatically stop recognition after 5 seconds of inactivity
-   useEffect(() => {
-    const timeout = setTimeout(() => {
-      // If no transcript change in 5 seconds, simulate click on mic button
-      if (Date.now() - lastTranscriptTime > 2500) {
-        const btn = document.getElementById("mic");
-        if (btn) {
-          btn.click(); // Simulate a click to stop listening
-        }
-        else console.log("btn not found")
-      }
-    }, 2500);
-
-    // Clean up timeout on transcript change or on component unmount
-    return () => clearTimeout(timeout);
-  }, [lastTranscriptTime]);
 
 
   const handleMicClick = () => {
@@ -283,7 +268,6 @@ function CreateItem() {
           }}
         />
       </div>
-    
             <Typography
               variant="body2"
               sx={{
@@ -296,6 +280,7 @@ function CreateItem() {
               👆🏻 Tap the mic for voice-based input! 
             </Typography>
           </Box>
+
           <TextField
             label={listening === true ? "Listening . . ." : "Provide Income/Expense Details here"}
             placeholder="e.g: ek litre dudh assi rupay . . ."
@@ -303,13 +288,18 @@ function CreateItem() {
             rows={4}
             value={inputMsg}
             onChange={handleInputChange}
+            onClick={() => SpeechRecognition.stopListening()}
             variant="outlined"
             fullWidth
             sx={{ bgcolor: 'background.paper', borderRadius: '4px' }}
           />
-
+          <div  style={{
+    width: '100%', // Makes the wrapper span the full width
+    display: 'flex',
+    justifyContent: 'center',
+  }} onClick={() => SpeechRecognition.stopListening()}>
           <MobileDatePicker
-            sx={{ backgroundColor: '#1e1e1e', textAlign: 'center', marginTop: '25px' }}
+            sx={{ backgroundColor: '#1e1e1e', width: '100%', textAlign: 'center', marginTop: '25px' }}
             label="Select Date"
             value={selectedDate}
             closeOnSelect={true}
@@ -317,6 +307,7 @@ function CreateItem() {
             format="DD MMM, YYYY"
             disableFuture={true}
           />
+          </div>
 
           <Button
             variant="contained"
