@@ -82,7 +82,7 @@ const getStringDate = (date) => {
 }
 
 const Dashboard = () => {
-  const { searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
+  const { searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
 
@@ -107,8 +107,6 @@ const Dashboard = () => {
 
 
   const getLastxDaysData = (days) => {
-    // console.log(days)
-    // console.log(items)
     setShowProgress(true);
     const today = new Date();
     const itemsForLastxDays = {};
@@ -152,23 +150,37 @@ const Dashboard = () => {
       setFilteredItems(searchedItems);
       return;
     }
+    
+    // console.log("#" + searchString + "#")
     const updatedFilteredItems = {};
 
-    // Loop through each date in searchedItems
     Object.keys(searchedItems).forEach((date) => {
-      const filteredEntries = searchedItems[date].filter((item) =>
-        item.itemName.toLowerCase().includes(searchString.toLowerCase())
-      );
-
+      const filteredEntries = searchedItems[date].filter((item) => {
+        // Check if the searchString matches the prefix of the date
+        const isDatePrefixMatch = date.startsWith(searchString);
+      
+        // Check if the searchString is found in the itemName (case-insensitive)
+        const isItemNameMatch = item.itemName
+          .toLowerCase()
+          .includes(searchString.toLowerCase());
+      
+        // Include the entry if either the date prefix matches or the itemName matches
+        return isDatePrefixMatch || isItemNameMatch;
+      });
+      
       // Only add the date if there are matching items for that date
       if (filteredEntries.length > 0) {
         updatedFilteredItems[date] = filteredEntries;
       }
     });
-
+    // console.log(updatedFilteredItems)
     setFilteredItems(updatedFilteredItems);
 
   }, [searchString])
+
+  useEffect(() => {
+    setSearchString(searchString2)
+  }, [searchString2])
 
   useEffect(() => {
     // console.log(filters.lastxdays)

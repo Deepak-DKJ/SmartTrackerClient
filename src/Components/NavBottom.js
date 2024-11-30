@@ -42,7 +42,7 @@ export default function FixedBottomNavigation() {
     navigate("/smart-tracker")
 }, [])
 
-const { value, setValue } = React.useContext(TrackerContext);
+const { valueNav, setValueNav } = React.useContext(TrackerContext);
     
   const ref = React.useRef(null);
   
@@ -53,19 +53,19 @@ const { value, setValue } = React.useContext(TrackerContext);
     <Box sx={{ pb: 0}} ref={ref}>
       <CssBaseline />
 
-      {value === 0 && (
+      {valueNav === 0 && (
         <>
         <DrawerAppBar page="dashboard" />
         <Dashboard />
         </>
       )}
-      {value === 1 && (
+      {valueNav === 1 && (
         <>
         <DrawerAppBar page='create' />
         <CreateItem />
         </>
       )}
-      {value === 2 && (
+      {valueNav === 2 && (
         <>
         <DrawerAppBar page='reports' />
         <Summary />
@@ -75,16 +75,16 @@ const { value, setValue } = React.useContext(TrackerContext);
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} >
         <BottomNavigation
           showLabels
-          value={value}
+          value={valueNav}
           onChange={(event, newValue) => {
-            setValue(newValue);
+            setValueNav(newValue);
           }}
         >
-          {value === 0 ? (<BottomNavigationAction label="Dashboard" icon={<SpaceDashboardIcon />} />) : (<BottomNavigationAction label="Dashboard" icon={<SpaceDashboardOutlinedIcon />} />)}
+          {valueNav === 0 ? (<BottomNavigationAction label="Dashboard" icon={<SpaceDashboardIcon />} />) : (<BottomNavigationAction label="Dashboard" icon={<SpaceDashboardOutlinedIcon />} />)}
 
-          {value === 1 ? (<BottomNavigationAction label="Create" icon={<AddCircleIcon />} />) : (<BottomNavigationAction label="Create" icon={<AddCircleOutlineIcon />} />)}
+          {valueNav === 1 ? (<BottomNavigationAction label="Create" icon={<AddCircleIcon />} />) : (<BottomNavigationAction label="Create" icon={<AddCircleOutlineIcon />} />)}
 
-          {value === 2 ? (<BottomNavigationAction label="Reports" icon={<InsertChartIcon />} />) : (<BottomNavigationAction label="Reports" icon={<InsertChartOutlinedIcon />} />)}
+          {valueNav === 2 ? (<BottomNavigationAction label="Reports" icon={<InsertChartIcon />} />) : (<BottomNavigationAction label="Reports" icon={<InsertChartOutlinedIcon />} />)}
           
         </BottomNavigation>
       </Paper>

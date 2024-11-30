@@ -53,7 +53,7 @@ TabPanel.propTypes = {
 
 const Summary = () => {
 
-  const { summaryItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems } = useContext(TrackerContext);
+  const { searchString2, setSearchString2,summaryItems, searchedItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems, setSearchString, valueNav, setValueNav} = useContext(TrackerContext);
 
   const [Label, setLabel] = useState("")
 
@@ -207,6 +207,10 @@ const Summary = () => {
   const earnings = sortedDates.map(date => chartItems[date].earning);
   const expenses = sortedDates.map(date => chartItems[date].expense);
 
+  const handleNavToDashboard = (date) => {
+    setSearchString2(date)
+    setValueNav(0)
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -426,7 +430,7 @@ const Summary = () => {
                               <TableBody>
                                 {Object.entries(chartItems).map(([date, { expense, earning }]) => (
                                   <TableRow key={date}>
-                                    <TableCell sx={{ color: '#B0B0B0' }}>{date}</TableCell>
+                                    <TableCell onClick={() => handleNavToDashboard(date)} sx={{ color: '#B0B0B0' }}>{date}</TableCell>
                                     <TableCell align="right">₹{expense}</TableCell>
                                     <TableCell align="right">₹{earning}</TableCell>
                                   </TableRow>
