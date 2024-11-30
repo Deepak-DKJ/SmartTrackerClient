@@ -9,6 +9,7 @@ import Dashboard from './Dashboard';
 import CreateItem from './CreateItem';
 import Summary from './Summary';
 
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { TrackerContext } from '../Context/TrackerContext';
 
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
@@ -37,15 +38,31 @@ const darkTheme = createTheme({
 
 export default function FixedBottomNavigation() {
   const navigate = useNavigate()
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
   React.useEffect(() => {
   if (!localStorage.getItem('token'))
     navigate("/smart-tracker")
 }, [])
 
-const { valueNav, setValueNav } = React.useContext(TrackerContext);
+const { setSearchString, setSearchString2, valueNav, setValueNav } = React.useContext(TrackerContext);
     
   const ref = React.useRef(null);
   
+  React.useEffect(() => {
+    if (listening) {
+      SpeechRecognition.stopListening();
+    } 
+    if(valueNav != 0)
+    {
+      setSearchString("")
+      setSearchString2("")
+    }
+  }, [valueNav])
 
   return (
     

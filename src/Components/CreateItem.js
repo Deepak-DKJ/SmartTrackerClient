@@ -149,18 +149,28 @@ function CreateItem() {
 
   // Update inputMsg with transcript when it changes
   useEffect(() => {
-    // console.log(transcript)
     setInputMsg(transcript);
   }, [transcript]);
   
-  // Clear inputMsg when recording starts
   useEffect(() => {
-    // console.log(listening)
     if (listening) {
       setInputMsg("");
     }
   }, [listening]);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && listening) {
+        SpeechRecognition.stopListening();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [listening]);
 
   const handleMicClick = () => {
     if (listening) {
