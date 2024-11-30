@@ -75,7 +75,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { value, setValue, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems } = React.useContext(TrackerContext);
+    const { setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -105,7 +105,7 @@ function DrawerAppBar(props) {
     };
     const navigate = useNavigate()
     const handleSignOut = () => {
-        setValue(1)
+        setValueNav(1)
         setItems({})
         setFilteredItems({})
         localStorage.removeItem('token');
@@ -125,17 +125,17 @@ function DrawerAppBar(props) {
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValue(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setValueNav(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Create" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValue(0); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setValueNav(0); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Dashboard" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValue(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Reports" />
                     </ListItemButton>
                 </ListItem>
