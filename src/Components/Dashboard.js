@@ -91,26 +91,6 @@ const Dashboard = () => {
   const { searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
-  console.log(filteredItems)
-  // const getLastxDaysData = (days) => {
-  //   const today = new Date();
-  //   const itemsForLastxDays = {};
-
-  //   for (let i = 0; i < days; i++) {
-  //     const currentDate = new Date();
-  //     currentDate.setDate(today.getDate() - i); // Go back 'i' days
-  //     const dateString = getStringDate(currentDate); // Format the date as a string
-  //     if (days <= 7)
-  //       itemsForLastxDays[dateString] = items[dateString] || [];
-  //     else {
-  //       if (dateString in itemsForLastxDays)
-  //         itemsForLastxDays[dateString] = items[dateString];
-  //     }
-  //   }
-
-  //   return itemsForLastxDays;
-  // };
-
 
   const getLastxDaysData = (days) => {
     setShowProgress(true);
@@ -188,6 +168,8 @@ const Dashboard = () => {
   }, [searchString2])
 
   useEffect(() => {
+    if(items === null)
+      return;
     // console.log(filters.lastxdays)
     getLastxDaysData(filters.lastxdays)
   }, [filters, items])
@@ -474,7 +456,7 @@ const Dashboard = () => {
       maxWidth: '500px',
       bgcolor: 'background.default',
     }}>
-      {filteredItems === null ? (
+      {items === null || filteredItems === null ? (
         <Box display="flex" justifyContent="center" alignItems="center" height='calc(90vh - 56px)'>
           <CircularProgress />
         </Box>

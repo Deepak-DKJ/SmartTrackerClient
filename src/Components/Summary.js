@@ -112,6 +112,8 @@ const Summary = () => {
 
   const fetchChartsAndSummary = () => {
     // console.log(rangeType)
+    if(items === null)
+      return
     if (rangeType === "period") {
       getLastxDaysData(duration)
       return;
@@ -196,7 +198,7 @@ const Summary = () => {
   };
 
   // CHART PARAMETERS
-  if (!chartItems) {
+  if (!chartItems || items === null) {
     return <Box display="flex" justifyContent="center" alignItems="center" height='calc(90vh - 56px)'>
     <CircularProgress />
   </Box>;
