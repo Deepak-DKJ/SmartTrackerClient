@@ -2,9 +2,9 @@ import { children, createContext, useState } from "react";
 const TrackerContext = createContext()
 
 const TrackerProvider = ({ children }) => {
-    const [items, setItems] = useState({});
+    const [items, setItems] = useState(null);
     const [inputMsg, setInputMsg] = useState('');
-    const [filteredItems, setFilteredItems] = useState({});
+    const [filteredItems, setFilteredItems] = useState(null);
     const [searchedItems, setSearchedItems] = useState({});
     
     const [filters, setFilters] = useState(JSON.parse(localStorage.getItem('filterLocal')) || {
@@ -13,8 +13,8 @@ const TrackerProvider = ({ children }) => {
         cat:"Any"
     });
 
-    const [summaryItems, setSummaryItems] = useState([]);
-    const [chartItems, setChartItems] = useState([]);
+    const [summaryItems, setSummaryItems] = useState(null);
+    const [chartItems, setChartItems] = useState(null);
     const [searchString, setSearchString] = useState("")
     const [searchString2, setSearchString2] = useState("")
   const [valueNav, setValueNav] = useState(1);

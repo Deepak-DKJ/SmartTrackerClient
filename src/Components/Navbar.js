@@ -120,22 +120,22 @@ function DrawerAppBar(props) {
             <hr />
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => navigate('/smart-tracker')} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => {setSearchString(""); navigate('/smart-tracker')}} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Home" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValueNav(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => {  setSearchString("");setValueNav(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Create" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValueNav(0); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setSearchString(""); setValueNav(0); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Dashboard" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => { setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => {setSearchString(""); setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Reports" />
                     </ListItemButton>
                 </ListItem>

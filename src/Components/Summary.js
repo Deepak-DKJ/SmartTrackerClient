@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Box, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Select, MenuItem, Divider, Typography, Button, Card, CardContent } from '@mui/material';
+import { Box, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Select, MenuItem, Divider, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
 import { MobileDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 
 
@@ -197,7 +197,9 @@ const Summary = () => {
 
   // CHART PARAMETERS
   if (!chartItems) {
-    return <div>Loading...</div>; // Show a loading message until data is available
+    return <Box display="flex" justifyContent="center" alignItems="center" height='calc(90vh - 56px)'>
+    <CircularProgress />
+  </Box>;
   }
 
   // Process data only after it's fetched

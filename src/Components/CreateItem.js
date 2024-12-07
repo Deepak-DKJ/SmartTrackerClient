@@ -68,7 +68,7 @@ function CreateItem() {
   useEffect(() => {
     const fetch_data = async () => {
       // console.log(items)
-      if (Object.keys(items).length > 0)
+      if (items !== null && Object.keys(items).length > 0)
         return;
       // setShowProgress(true)
       try {
