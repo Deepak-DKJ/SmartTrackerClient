@@ -168,7 +168,7 @@ const Dashboard = () => {
   }, [searchString2])
 
   useEffect(() => {
-    if(items === null)
+    if (items === null)
       return;
     // console.log(filters.lastxdays)
     getLastxDaysData(filters.lastxdays)
@@ -182,6 +182,7 @@ const Dashboard = () => {
 
   const handleCloseFilterModal = () => {
     setPreviewURL(null)
+    setDriveFileName("File")
     setDriveFileId(null)
     setDloadURL(null)
     setEdit(false)
@@ -318,17 +319,17 @@ const Dashboard = () => {
   const [open, setOpen] = useState(false)
 
   const handleDeleteItem = async () => {
-    if(billDelete)
-    {
+    if (billDelete) {
 
       setBillDelete(false);
       setPreviewURL(null)
       setDriveFileId(null)
       setDloadURL(null)
+      setDriveFileName("File")
       setItems(prevItems => {
         // Get the list of entries for the selected date
         const entriesForDate = prevItems[originalSelectedItemDate] || [];
-      
+
         // Update the specific item's `billImage` field to `null`
         const updatedEntriesForDate = entriesForDate.map(entry => {
           if (entry.itemId === selectedItemId) {
@@ -336,20 +337,20 @@ const Dashboard = () => {
           }
           return entry; // Return other entries as-is
         });
-      
+
         // Update the state with the modified list for the specific date
         return {
           ...prevItems,
           [originalSelectedItemDate]: updatedEntriesForDate,
         };
       });
-      
+
       setOpen(false)
       try {
         let authToken = localStorage.getItem('token');
         // console.log(authToken)
         const response = await axios.put(
-          `${baseUrl}/items/deletebill/${selectedItemId}`,{},
+          `${baseUrl}/items/deletebill/${selectedItemId}`, {},
           {
             headers: {
               Token: authToken,
@@ -419,6 +420,7 @@ const Dashboard = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
   const [driveFileId, setDriveFileId] = useState(null)
+  const [driveFileName, setDriveFileName] = useState(null)
   const [dloadURL, setDloadURL] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -500,7 +502,7 @@ const Dashboard = () => {
                   </DialogTitle>
                   <DialogContent>
                     <DialogContentText id="confirm-dialog-description">
-                      Do you want to delete this {billDelete? ("bill") : ("entry")}? <br /> This action cannot be undone!
+                      Do you want to delete this {billDelete ? ("bill") : ("entry")}? <br /> This action cannot be undone!
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
@@ -550,10 +552,14 @@ const Dashboard = () => {
                               {dayjs(originalSelectedItemDate).format("DD/MM/YYYY")} : {selectedItemName}
                             </Typography>
                             <Tooltip title="Download bill" arrow>
-                              <IconButton sx={{ mr: 2 }} onClick={() => window.open(dloadURL)}>
-                                <FileDownloadIcon />
-                              </IconButton>
-                            </Tooltip>
+                                    <IconButton
+                                    sx={{mr: 2}}
+                                      component="a"
+                                      href={`${baseUrl}/items/download/${driveFileId}@${driveFileName}`}
+                                    >
+                                      <FileDownloadIcon />
+                                    </IconButton>
+                                  </Tooltip>
                             <Tooltip title="Exit fullscreen" arrow>
                               <IconButton edge="start" color="inherit" onClick={closeFullBillDialog} aria-label="close">
                                 <FullscreenExitIcon />
@@ -686,20 +692,19 @@ const Dashboard = () => {
                                   Uploaded Bill/Invoice
                                 </Typography>
                                 <Box>
-                                <Tooltip title="Download bill" arrow>
-  <IconButton
-    sx={{ mr: 2 }}
-    component="a"
-    href={`${baseUrl}/items/download/${driveFileId}`}
-  >
-    <FileDownloadIcon />
-  </IconButton>
-</Tooltip>
                                   <Tooltip title="Download bill" arrow>
-                                    <IconButton onClick={() => window.open(dloadURL)}>
+                                    <IconButton
+                                      component="a"
+                                      href={`${baseUrl}/items/download/${driveFileId}@${driveFileName}`}
+                                    >
                                       <FileDownloadIcon />
                                     </IconButton>
                                   </Tooltip>
+                                  {/* <Tooltip title="Download bill" arrow>
+                                    <IconButton onClick={() => window.open(dloadURL)}>
+                                      <FileDownloadIcon />
+                                    </IconButton>
+                                  </Tooltip> */}
                                   <Tooltip title="Enter fullscreen" arrow>
                                     <IconButton onClick={() => setFullScreenOpen(true)}>
                                       <FullscreenIcon />
@@ -791,7 +796,7 @@ const Dashboard = () => {
                                 <input
                                   type="file"
                                   accept="image/*"
-                                    disabled={loading}
+                                  disabled={loading}
                                   onChange={handleFileChange}
                                   hidden
                                   id="file-upload"
@@ -802,17 +807,17 @@ const Dashboard = () => {
                               {previewURL && (
                                 <Box display="flex" alignItems="center">
                                   <Tooltip title="View bill" arrow>
-                                  <IconButton disabled={loading} onClick={() => setFullScreenOpen(true)}>
-                                    <Visibility />
-                                  </IconButton>
+                                    <IconButton disabled={loading} onClick={() => setFullScreenOpen(true)}>
+                                      <Visibility />
+                                    </IconButton>
                                   </Tooltip>
                                   <Tooltip title="Delete bill" arrow>
-                                  <IconButton disabled={loading} onClick={ () => {
-                                    setBillDelete(true)
-                                    setOpen(true)
+                                    <IconButton disabled={loading} onClick={() => {
+                                      setBillDelete(true)
+                                      setOpen(true)
                                     }}>
-                                    <Delete />
-                                  </IconButton>
+                                      <Delete />
+                                    </IconButton>
                                   </Tooltip>
                                 </Box>
                               )}
@@ -915,8 +920,8 @@ const Dashboard = () => {
                         onClick={() => {
                           handleEditItem();
                         }}
-                        
-                      size='small'
+
+                        size='small'
                         disabled={loading}
                         color="primary"
                         variant="contained"
@@ -957,6 +962,7 @@ const Dashboard = () => {
                                       setSelectedItemQn(item.quantity)
                                       setSelectedItemType(item.type)
                                       setSelectedItemDesc(item.desc || "")
+                                      setDriveFileName(item?.billImage?.fileName)
                                       setDriveFileId(item?.billImage?.driveFileId)
                                       setPreviewURL(item?.billImage?.webViewLink)
                                       setDloadURL(item?.billImage?.webContentLink)
