@@ -548,14 +548,13 @@ const Dashboard = () => {
                               {dayjs(originalSelectedItemDate).format("DD/MM/YYYY")} : {selectedItemName}
                             </Typography>
                             <Tooltip title="Download bill" arrow>
-                              <IconButton
-                                component="a"
-                                href={dloadURL}
-                                download
-                              >
-                                <FileDownloadIcon />
-                              </IconButton>
-                            </Tooltip>
+  <IconButton
+    onClick={() => (window.location.href = dloadURL)}
+  >
+    <FileDownloadIcon />
+  </IconButton>
+</Tooltip>
+
 
                             <Tooltip title="Exit fullscreen" arrow>
                               <IconButton edge="start" color="inherit" onClick={closeFullBillDialog} aria-label="close">
@@ -689,15 +688,14 @@ const Dashboard = () => {
                                   Uploaded Bill/Invoice
                                 </Typography>
                                 <Box>
-                                  <Tooltip title="Download bill" arrow>
-                                    <IconButton
-                                      component="a"
-                                      href={dloadURL}
-                                      download
-                                    >
-                                      <FileDownloadIcon />
-                                    </IconButton>
-                                  </Tooltip>
+                                <Tooltip title="Download bill" arrow>
+  <IconButton
+    onClick={() => (window.location.href = dloadURL)}
+  >
+    <FileDownloadIcon />
+  </IconButton>
+</Tooltip>
+
                                   <Tooltip title="Enter fullscreen" arrow>
                                     <IconButton onClick={() => setFullScreenOpen(true)}>
                                       <FullscreenIcon />
