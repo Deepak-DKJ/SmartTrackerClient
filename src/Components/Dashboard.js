@@ -225,7 +225,7 @@ const Dashboard = () => {
         desc: selectedItemDesc,
         ...(billImage !== null && { billImage })
       };
-      console.log(updatedEntry)
+      // console.log(updatedEntry)
       if (originalDate === updatedDate) {
         // Update the entry in the same date list if the date hasn't changed
         const updatedEntriesForDate = [
@@ -345,7 +345,7 @@ const Dashboard = () => {
       setOpen(false)
       try {
         let authToken = localStorage.getItem('token');
-        console.log(authToken)
+        // console.log(authToken)
         const response = await axios.put(
           `${baseUrl}/items/deletebill/${selectedItemId}`,{},
           {
@@ -431,7 +431,6 @@ const Dashboard = () => {
     formData.append("bill", file);
 
     let authToken = localStorage.getItem("token");
-    console.log(formData)
     try {
       const response = await axios.put(`${baseUrl}/items/updateitem/${selectedItemId}`, formData, {
         headers: {
@@ -441,7 +440,6 @@ const Dashboard = () => {
         },
       })
       handleEditItem(response.data?.billImage)
-      console.log(response.data)
     }
     catch (error) {
       console.error("Error uploading file:", error);
@@ -783,6 +781,7 @@ const Dashboard = () => {
                                 <input
                                   type="file"
                                   accept="image/*"
+                                    disabled={loading}
                                   onChange={handleFileChange}
                                   hidden
                                   id="file-upload"
