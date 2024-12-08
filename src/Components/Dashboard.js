@@ -549,7 +549,6 @@ const Dashboard = () => {
                             </Typography>
                             <Tooltip title="Download bill" arrow>
                               <IconButton
-                                sx={{ mr: 2 }}
                                 component="a"
                                 href={dloadURL}
                                 download
@@ -692,7 +691,6 @@ const Dashboard = () => {
                                 <Box>
                                   <Tooltip title="Download bill" arrow>
                                     <IconButton
-                                      sx={{ mr: 2 }}
                                       component="a"
                                       href={dloadURL}
                                       download
