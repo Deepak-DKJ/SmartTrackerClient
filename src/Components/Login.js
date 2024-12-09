@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar'
 import { Slide } from '@mui/material';
 import { RingSpinner } from 'react-spinners-kit';
+import GoogleLoginButton from './GoogleLoginButton';
 
 const Login = () => {
   const [loading, setLoading] = useState(false)
@@ -37,8 +38,6 @@ const Login = () => {
         localStorage.setItem('token', response.data.authToken)
         localStorage.setItem('userdata',  JSON.stringify(response.data.userData))
       }
-      // console.log(response.data.userData)
-      // console.log(JSON.parse(localStorage.getItem('userdata')))
       setEmail("")
       setPassword("")
       setLoading(false)
@@ -51,7 +50,6 @@ const Login = () => {
         "vis": true,
         "msg": err.response ? err.response.data.error : "Some error!"
       })
-      // console.log(err.response.data.error)
     }
   }
 
@@ -95,8 +93,11 @@ const Login = () => {
       <div className="signin">
           <h1 style={{fontSize: "2.0em", color: "cyan",textAlign:"center", textTransform: "uppercase", marginBottom:"0px"}}>Sign In</h1>
           <Box sx={{ textAlign: 'center', mb: 0 }}>
-            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="100%" />
+            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="90%" />
           </Box>
+          <div className='mb-4'>
+          <GoogleLoginButton /> 
+          </div>
         <div className="content">
     
           <div className="form">

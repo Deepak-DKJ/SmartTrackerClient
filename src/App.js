@@ -8,7 +8,7 @@ import CreateItem from './Components/CreateItem';
 import NavBottom from './Components/NavBottom';
 import Login from './Components/Login';
 import Signup from './Components/Signup';
-
+import { GoogleOAuthProvider } from '@react-oauth/google';
 function App() {
   return (
     <>
@@ -20,6 +20,7 @@ function App() {
             {/* <Route exact path='/smart-tracker/create' Component={CreateItem} /> */}
             
             <Route exact path='/smart-tracker/create' Component={NavBottom} />
+          
             <Route exact path='/smart-tracker/login' Component={Login} />
             <Route exact path='/smart-tracker/signup' Component={Signup} />
             <Route path = '*' element={<Navigate to="/smart-tracker/create" />} />
