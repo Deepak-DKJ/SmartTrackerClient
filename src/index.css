@@ -54,7 +54,7 @@ section .signin .content .form {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 section .signin .content .form .inputBox {

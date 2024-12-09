@@ -74,7 +74,7 @@ const Login = () => {
         </Box>
       )}
       <Snackbar
-        autoHideDuration={2000}
+        autoHideDuration={3000}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={alert.vis}
 
@@ -92,9 +92,9 @@ const Login = () => {
         <div className="signin">
           <h1 style={{ fontSize: "2.0em", color: "cyan", textAlign: "center", textTransform: "uppercase", marginBottom: "0px" }}>Sign In</h1>
           <Box sx={{ textAlign: 'center', mb: 0 }}>
-            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="90%" />
+            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="80%" />
           </Box>
-          <div className="mb-4">
+          <div className="mb-3" style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
             <GoogleLoginButton />
           </div>
 
