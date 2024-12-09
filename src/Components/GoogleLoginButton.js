@@ -80,7 +80,7 @@ const GoogleLoginButton = () => {
       />
             <GoogleLogin
                 theme='filled_blue'
-                width={20}
+                width={30}
                 onSuccess={handleGoogleLogin}
                 onError={() => setError('Google login failed')}
             />
