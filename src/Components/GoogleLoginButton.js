@@ -78,12 +78,14 @@ const GoogleLoginButton = () => {
         TransitionComponent={Slide}
         message={alert.msg}
       />
+      <Box>
             <GoogleLogin
                 theme='filled_blue'
-                width={30}
+                width={"270px"}
                 onSuccess={handleGoogleLogin}
                 onError={() => setError('Google login failed')}
             />
+      </Box>
             {error && <p>{error}</p>}
         </div>
     );
