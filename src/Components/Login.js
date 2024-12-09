@@ -33,10 +33,9 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${baseUrl}/auth/login`, data);
-      if(response.data)
-      {
+      if (response.data) {
         localStorage.setItem('token', response.data.authToken)
-        localStorage.setItem('userdata',  JSON.stringify(response.data.userData))
+        localStorage.setItem('userdata', JSON.stringify(response.data.userData))
       }
       setEmail("")
       setPassword("")
@@ -74,7 +73,7 @@ const Login = () => {
 
         </Box>
       )}
-       <Snackbar
+      <Snackbar
         autoHideDuration={2000}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={alert.vis}
@@ -88,38 +87,39 @@ const Login = () => {
         TransitionComponent={Slide}
         message={alert.msg}
       />
-    <section>
-      
-      <div className="signin">
-          <h1 style={{fontSize: "2.0em", color: "cyan",textAlign:"center", textTransform: "uppercase", marginBottom:"0px"}}>Sign In</h1>
+      <section>
+
+        <div className="signin">
+          <h1 style={{ fontSize: "2.0em", color: "cyan", textAlign: "center", textTransform: "uppercase", marginBottom: "0px" }}>Sign In</h1>
           <Box sx={{ textAlign: 'center', mb: 0 }}>
             <img src="/smarttracker.png" alt="TestGen.AI Logo" width="90%" />
           </Box>
-          <div className='mb-4' style={{width:"100%"}}>
-          <GoogleLoginButton /> 
+          <div className="mb-4" style={{ width: "100%" }}>
+            <GoogleLoginButton style={{ width: "100%", display: "block" }} />
           </div>
-        <div className="content">
-    
-          <div className="form">
-            <div className="inputBox">
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" required />
-              <i>Email</i>
-            </div>
-            <div className="inputBox">
-              <input value={password} type="password" onChange={(e) => setPassword(e.target.value)} required />
-              <i>Password</i>
-            </div>
-            <div className="links">
-              <p>Are you a new user?</p>
-              <Link to="/smart-tracker/signup">Signup</Link>
-            </div>
-            <div className="inputBox">
-              <input type="submit" value="Login" onClick={handleLogin} />
+
+          <div className="content">
+
+            <div className="form">
+              <div className="inputBox">
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" required />
+                <i>Email</i>
+              </div>
+              <div className="inputBox">
+                <input value={password} type="password" onChange={(e) => setPassword(e.target.value)} required />
+                <i>Password</i>
+              </div>
+              <div className="links">
+                <p>Are you a new user?</p>
+                <Link to="/smart-tracker/signup">Signup</Link>
+              </div>
+              <div className="inputBox">
+                <input type="submit" value="Login" onClick={handleLogin} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
     </div>
   );
 };
