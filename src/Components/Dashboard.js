@@ -437,8 +437,7 @@ const Dashboard = () => {
     try {
       const response = await axios.put(`${baseUrl}/items/updateitem/${selectedItemId}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Required for FormData
-
+          // 'Content-Type': 'multipart/form-data',
           Token: authToken,
         },
       })
@@ -795,7 +794,7 @@ const Dashboard = () => {
                                 </label>
                                 <input
                                   type="file"
-                                  accept="image/*"
+                                  accept="image/*,.pdf"
                                   disabled={loading}
                                   onChange={handleFileChange}
                                   hidden
