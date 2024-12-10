@@ -53,9 +53,9 @@ TabPanel.propTypes = {
 
 const Summary = () => {
 
-  const { searchString2, setSearchString2,summaryItems, searchedItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems, setSearchString, valueNav, setValueNav} = useContext(TrackerContext);
+  const { Label, setLabel, searchString2, setSearchString2, summaryItems, searchedItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems, setSearchString, valueNav, setValueNav } = useContext(TrackerContext);
 
-  const [Label, setLabel] = useState("")
+
 
   const getStringDate = (date) => {
     // const date = new Date();
@@ -112,7 +112,7 @@ const Summary = () => {
 
   const fetchChartsAndSummary = () => {
     // console.log(rangeType)
-    if(items === null)
+    if (items === null)
       return
     if (rangeType === "period") {
       getLastxDaysData(duration)
@@ -177,7 +177,7 @@ const Summary = () => {
   const [customStartDate, setCustomStartDate] = useState(dayjs());
   const [customEndDate, setCustomEndDate] = useState(dayjs());
 
-  
+
   useEffect(() => {
     fetchChartsAndSummary();
   }, [duration, customStartDate, customEndDate, rangeType])
@@ -200,8 +200,8 @@ const Summary = () => {
   // CHART PARAMETERS
   if (!chartItems || items === null) {
     return <Box display="flex" justifyContent="center" alignItems="center" height='calc(90vh - 56px)'>
-    <CircularProgress />
-  </Box>;
+      <CircularProgress />
+    </Box>;
   }
 
   // Process data only after it's fetched
@@ -398,13 +398,13 @@ const Summary = () => {
                           <hr />
 
                           <Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
-                          <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
+                            <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
                               Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
                             </Typography>
-                            
-                            <Typography variant="body1" sx={{  ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
+
+                            <Typography variant="body1" sx={{ ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
                             </Typography>
-                           
+
                           </Box>
 
                         </div>
@@ -417,13 +417,14 @@ const Summary = () => {
                 {value === 1 && (
                   <>
 
+
                     {(Object.keys(chartItems).length === 0) ? (
                       <h6 style={{ textAlign: "center" }}>No Entries found!</h6>
                     ) : (
                       <>
                         <Box >
                           <TableContainer component={Paper} sx={{ height: "49.5vh" }}>
-                            <Table  stickyHeader aria-label="item summary table">
+                            <Table stickyHeader aria-label="item summary table">
                               <TableHead>
                                 <TableRow>
                                   <TableCell><strong>Date</strong></TableCell>
@@ -445,15 +446,15 @@ const Summary = () => {
 
                           <hr />
 
-<Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
-<Typography variant="body1" sx={{ color: "#B0B0B0" }}>
-    Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
-  </Typography>
-  
-  <Typography variant="body1" sx={{  ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
-  </Typography>
- 
-</Box>
+                          <Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
+                            <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
+                              Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
+                            </Typography>
+
+                            <Typography variant="body1" sx={{ ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
+                            </Typography>
+
+                          </Box>
                         </Box>
                       </>
                     )}

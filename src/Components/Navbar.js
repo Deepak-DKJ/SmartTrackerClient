@@ -18,7 +18,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import InputBase from '@mui/material/InputBase';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import DownloadIcon from '@mui/icons-material/Download';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -26,10 +27,13 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, TextField, Tooltip } from '@mui/material';
+import { DialogActions, Menu, TextField, Tooltip } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+import "jspdf-autotable";
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
 });
@@ -72,10 +76,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function DrawerAppBar(props) {
     const { window } = props;
+    const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const handleClickUserMenu = (event) => {
+        setAnchorElUser(event.currentTarget);
+    };
+
+    const handleCloseUserMenu = () => {
+        setAnchorElUser(null);
+    };
+
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems } = React.useContext(TrackerContext);
+    const { setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -86,6 +99,59 @@ function DrawerAppBar(props) {
 
     const handleCloseFilterModal = () => {
         setOpenFilterModal(false);
+    };
+
+
+    const handleExportToExcel = () => {
+        const headerTitle = `Expenses & Earnings Summary - ${Label}`;
+
+        // Prepare rows for the worksheet
+        const rows = [
+            [headerTitle],                // Header Title
+            [],                           // Empty Row for spacing
+            ["Date", "Expenses", "Earnings"], // Column Headers
+        ];
+        Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+            rows.push([date, expense, earning]);
+        });
+
+        // Create worksheet and add data
+        const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+        // Merge header cells
+        worksheet["!merges"] = [{ s: { c: 0, r: 0 }, e: { c: 2, r: 0 } }]; // Merge A1:C1
+
+        // Adjust column widths
+        worksheet["!cols"] = [{ wch: 20 }, { wch: 15 }, { wch: 15 }]; // Adjust width for each column
+
+        // Create workbook and append the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Summary");
+
+        // Save the workbook as an Excel file
+        XLSX.writeFile(workbook, `Summary - ${Label}.xlsx`);
+    };
+
+
+    const handleExportToPDF = () => {
+        const doc = new jsPDF();
+        // Add title
+        doc.text(`Expenses & Earnings Summary - ${Label}`, 10, 10);
+
+        // Format data for the table
+        const tableRows = [];
+        Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+            tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
+        });
+
+        // Add table to PDF
+        doc.autoTable({
+            head: [["Date", "Expenses", "Earnings"]],
+            body: tableRows,
+        });
+
+        // Save the PDF
+        doc.save(`Summary - ${Label}.pdf`);
     };
 
     const getStringDate = (date) => {
@@ -120,12 +186,12 @@ function DrawerAppBar(props) {
             <hr />
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => {setSearchString(""); navigate('/smart-tracker')}} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setSearchString(""); navigate('/smart-tracker') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Home" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => {  setSearchString("");setValueNav(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setSearchString(""); setValueNav(1); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Create" />
                     </ListItemButton>
                 </ListItem>
@@ -135,18 +201,18 @@ function DrawerAppBar(props) {
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={(e) => {setSearchString(""); setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                    <ListItemButton onClick={(e) => { setSearchString(""); setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Reports" />
                     </ListItemButton>
                 </ListItem>
 
                 <hr />
 
-                <Typography variant='h6' sx={{ color:"cyan", fontWeight: 'bold' }}>
-                               User Profile
-                            </Typography>
-            {/* <hr /> */}
-                <ListItem sx={{ mt:2,  textAlign: 'center' }} >
+                <Typography variant='h6' sx={{ color: "cyan", fontWeight: 'bold' }}>
+                    User Profile
+                </Typography>
+                {/* <hr /> */}
+                <ListItem sx={{ mt: 2, textAlign: 'center' }} >
                     <ListItemText
                         primary={
                             <Typography component="span" sx={{ color: '#B0B0B0', fontWeight: 'bold' }}>
@@ -184,7 +250,7 @@ function DrawerAppBar(props) {
                             </Typography>
                         }
                         secondary={
-                            <Typography component="span" sx={{ ml:1, color: 'white' }}>
+                            <Typography component="span" sx={{ ml: 1, color: 'white' }}>
                                 {user?.created}
                             </Typography>
                         }
@@ -192,7 +258,7 @@ function DrawerAppBar(props) {
                 </ListItem>
 
 
-                <Button sx={{my:3}} variant='contained' color='primary' onClick={handleSignOut} >Sign out</Button>
+                <Button sx={{ my: 3 }} variant='contained' color='primary' onClick={handleSignOut} >Sign out</Button>
                 <hr />
             </List>
         </Box>
@@ -259,7 +325,7 @@ function DrawerAppBar(props) {
                             value={catType}
                             onChange={(e) => setCatType(e.target.value)}
                             style={{ marginBottom: "15px" }}
-                            
+
                         >
                             <MenuItem value="Any">Any</MenuItem>
                             <MenuItem value="Groceries">Groceries</MenuItem>
@@ -289,7 +355,7 @@ function DrawerAppBar(props) {
                                 type: filterType,
                                 cat: catType
                             });
-                            
+
                             localStorage.setItem('filterLocal', JSON.stringify({
                                 lastxdays: daysNumber,
                                 type: filterType,
@@ -331,13 +397,13 @@ function DrawerAppBar(props) {
                                 </Typography>
                                 {searchString === "" ? (
                                     <Tooltip title="Filters" arrow>
-                                    <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                        <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
                                     </Tooltip>
-                                    ) : ( 
-                                        <Tooltip title="Clear" arrow>
-                                    <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                ) : (
+                                    <Tooltip title="Clear" arrow>
+                                        <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
                                     </Tooltip>
-                                    )
+                                )
                                 }
 
                                 <Search sx={{ marginLeft: 'auto' }}>
@@ -363,10 +429,88 @@ function DrawerAppBar(props) {
                         )}
 
                         {page === 'reports' && (
+                            <>
+                                <Typography variant="h6" noWrap component="div" sx={{ marginLeft: "auto" }}>
+                                    Smart Tracker
+                                </Typography>
+                                <Tooltip title="Download Report" arrow>
+                                    <DownloadIcon
+                                        onClick={handleClickUserMenu}
+                                        sx={{
+                                            marginLeft: "auto",
+                                            fontSize: "28px",
+                                            marginRight: "8px",
+                                            backgroundColor: "cyan", // Gradient background
+                                            borderRadius: "50%", // Circular shape for the icon
+                                            padding: "1px", // Add padding for a larger clickable area
+                                            color: "black", // White icon color
+                                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Add subtle shadow
+                                            transition: "all 0.3s ease", // Smooth transition for hover effects
+                                            "&:hover": {
+                                                transform: "scale(1.2)", // Slightly increase the size on hover
+                                            },
+                                            "&:active": {
+                                                transform: "scale(0.80)", // Slightly reduce size on click
+                                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Shadow reduction on click
+                                            },
+                                        }}
+                                    />
+                                </Tooltip>
 
-                            <Typography sx={{ ml: 7 }} variant="h6" noWrap component="div">
-                                Smart Tracker
-                            </Typography>
+
+                                <Menu
+                                    sx={{
+                                        mt: "45px",
+                                        "& .MuiPaper-root": {
+                                            backgroundColor: "#333", // Dark background for the menu
+                                            color: "white", // White text color
+                                        },
+                                    }}
+                                    id="menu-appbar"
+                                    anchorEl={anchorElUser}
+                                    anchorOrigin={{
+                                        vertical: "top",
+                                        horizontal: "right",
+                                    }}
+                                    keepMounted
+                                    transformOrigin={{
+                                        vertical: "top",
+                                        horizontal: "right",
+                                    }}
+                                    open={Boolean(anchorElUser)}
+                                    onClose={handleCloseUserMenu}
+                                >
+
+                                    <MenuItem
+                                        sx={{
+                                            "&:hover": {
+                                                backgroundColor: "#444", // Darker background on hover
+                                            },
+                                            color: "white", // White text color
+                                        }}
+                                        onClick={handleExportToPDF}
+                                    >
+                                        <Typography sx={{ textAlign: "center" }}>
+                                            Export to PDF
+                                        </Typography>
+                                    </MenuItem>
+
+                                    <MenuItem
+                                        sx={{
+                                            "&:hover": {
+                                                backgroundColor: "#444", // Darker background on hover
+                                            },
+                                            color: "white", // White text color
+                                        }}
+                                        onClick={handleExportToExcel}
+                                    >
+                                        <Typography sx={{ textAlign: "center" }}>
+                                            Export to Excel
+                                        </Typography>
+                                    </MenuItem>
+                                </Menu>
+
+                            </>
 
                         )}
 
