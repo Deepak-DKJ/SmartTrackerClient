@@ -214,6 +214,12 @@ const Dashboard = () => {
     // Find the index of the item to update
     const itemIndex = entriesForOriginalDate.findIndex(entry => entry.itemId === selectedItemId);
     // console.log(billImage)
+    if(billImage === undefined)
+    {
+      billImage = entriesForOriginalDate[itemIndex]?.billImage
+    }
+    // console.log(billImage)
+    // console.log(entriesForOriginalDate[itemIndex])
     if (itemIndex !== -1) {
       // Create a new entry with updated values
 
@@ -249,8 +255,9 @@ const Dashboard = () => {
         ];
 
         const entriesForUpdatedDate = items[updatedDate] || [];
+        // console.log(entriesForUpdatedDate)
         const updatedEntriesForUpdatedDate = [...entriesForUpdatedDate, updatedEntry];
-
+        // console.log(updatedEntriesForUpdatedDate)
         setItems(prevItems => {
           const newItems = { ...prevItems };
 
@@ -548,7 +555,8 @@ const Dashboard = () => {
                           <Toolbar>
 
                             <Typography sx={{ ml: 1, flex: 1 }} variant="body1" component="div">
-                              {dayjs(originalSelectedItemDate).format("DD/MM/YYYY")} : {selectedItemName}
+                              {/* {console.log(originalSelectedItemDate)} */}
+                              {(originalSelectedItemDate)} : {selectedItemName}
                             </Typography>
                             <Tooltip title="Download bill" arrow>
                                     <IconButton
