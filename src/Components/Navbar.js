@@ -1,6 +1,8 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import AppBar from '@mui/material/AppBar';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import Drawer from '@mui/material/Drawer';
@@ -88,7 +90,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
+    const { summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -105,7 +107,6 @@ function DrawerAppBar(props) {
     const handleExportToExcel = () => {
         const headerTitle = `Expenses & Earnings Summary - ${Label}`;
 
-        // Prepare rows for the worksheet
         const rows = [
             [headerTitle],                // Header Title
             [],                           // Empty Row for spacing
@@ -114,46 +115,65 @@ function DrawerAppBar(props) {
         Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
             rows.push([date, expense, earning]);
         });
+        rows.push([])
+        rows.push(["Total", summaryItems?.Expense, summaryItems?.Earning])
+        rows.push([])
+        const currentDate = dayjs().format("DD MMM, YYYY"); // Format date as '11 Dec, 2024'
+        rows.push([`Report generated on: ${currentDate}`]);
 
-        // Create worksheet and add data
         const worksheet = XLSX.utils.aoa_to_sheet(rows);
 
-        // Merge header cells
         worksheet["!merges"] = [{ s: { c: 0, r: 0 }, e: { c: 2, r: 0 } }]; // Merge A1:C1
+        worksheet["!cols"] = [{ wch: 18 }, { wch: 18 }, { wch: 18 }]; // Adjust width for each column
 
-        // Adjust column widths
-        worksheet["!cols"] = [{ wch: 20 }, { wch: 15 }, { wch: 15 }]; // Adjust width for each column
-
-        // Create workbook and append the worksheet
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Summary");
 
-        // Save the workbook as an Excel file
         XLSX.writeFile(workbook, `Summary - ${Label}.xlsx`);
     };
 
 
-    const handleExportToPDF = () => {
-        const doc = new jsPDF();
-        // Add title
-        doc.text(`Expenses & Earnings Summary - ${Label}`, 10, 10);
+const handleExportToPDF = () => {
+    const doc = new jsPDF();
 
-        // Format data for the table
-        const tableRows = [];
-        Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
-            tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
-        });
+    // Title Header - Centered
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const title = `Expenses & Earnings Summary - ${Label}`;
+    doc.setFontSize(16); // Font size for title
+    const textWidth = doc.getTextWidth(title);
+    doc.text(title, (pageWidth - textWidth) / 2, 10); // Center the title
 
-        // Add table to PDF
-        doc.autoTable({
-            head: [["Date", "Expenses", "Earnings"]],
-            body: tableRows,
-        });
+    // Format data for the table
+    const tableRows = [];
+    const startY = 20;
+    
+    Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+        tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
+    });
 
-        // Save the PDF
-        doc.save(`Summary - ${Label}.pdf`);
-    };
+    tableRows.push([]);
+    tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
 
+    // Auto Table with Centered Alignment
+    doc.autoTable({
+        head: [["Date", "Expenses", "Earnings"]],
+        body: tableRows,
+        startY,
+        styles: { fontSize: 14, halign: "center" }, // Center-align content
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" }, // Center-align headers
+    });
+
+    // Add a Bottom Caption with Formatted Date
+    const currentDate = dayjs().format("DD MMM, YYYY"); // Format date as '11 Dec, 2024'
+    const caption = `Report generated on: ${currentDate}`;
+    doc.setFontSize(13); // Font size for caption
+    doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10); // Bottom right corner
+
+    // Save PDF
+    doc.save(`Summary - ${Label}.pdf`);
+};
+
+    
     const getStringDate = (date) => {
         // const date = new Date();
         const dd = String(date.getDate()).padStart(2, '0');
@@ -442,12 +462,12 @@ function DrawerAppBar(props) {
                                             marginRight: "8px",
                                             backgroundColor: "cyan", // Gradient background
                                             borderRadius: "50%", // Circular shape for the icon
-                                            padding: "1px", // Add padding for a larger clickable area
+                                            padding: "3px", // Add padding for a larger clickable area
                                             color: "black", // White icon color
                                             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Add subtle shadow
                                             transition: "all 0.3s ease", // Smooth transition for hover effects
                                             "&:hover": {
-                                                transform: "scale(1.2)", // Slightly increase the size on hover
+                                                transform: "scale(1.1)", // Slightly increase the size on hover
                                             },
                                             "&:active": {
                                                 transform: "scale(0.80)", // Slightly reduce size on click
