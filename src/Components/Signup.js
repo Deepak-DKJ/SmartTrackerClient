@@ -103,7 +103,7 @@ const Signup = () => {
 
         <h1 style={{fontSize: "2.0em", color: "cyan",textAlign:"center", textTransform: "uppercase", marginBottom:"0px"}}>Sign Up</h1>
           <Box sx={{ textAlign: 'center', mb: 0 }}>
-            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="100%" />
+            <img src="/smarttracker.png" alt="TestGen.AI Logo" width="80%" />
           </Box>
           <div className="content">
             {/* <h2>Sign Up</h2> */}
