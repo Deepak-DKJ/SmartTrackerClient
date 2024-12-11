@@ -94,7 +94,7 @@ const Login = () => {
           <Box sx={{ textAlign: 'center', mb: 0 }}>
             <img src="/smarttracker.png" alt="TestGen.AI Logo" width="80%" />
           </Box>
-          <div className="mb-3" style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+          <div style={{display:'flex', justifyContent:'center', alignItems:'center', marginBottom:"18px"}}>
             <GoogleLoginButton />
           </div>
 

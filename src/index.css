@@ -25,6 +25,7 @@ section {
   justify-content: center;
   align-items: center;
   background-color: #181818;
+  padding: 7px;
 }
 
 section .signin {
@@ -51,7 +52,7 @@ section .signin .content {
 } */
 
 section .signin .content .form {
-  width: 100%;
+  width: 260px;
   display: flex;
   flex-direction: column;
   gap: 15px;
