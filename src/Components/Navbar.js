@@ -106,68 +106,153 @@ function DrawerAppBar(props) {
 
     const handleExportToExcel = () => {
         const headerTitle = `Expenses & Earnings Summary - ${Label}`;
-
+    
+        // Rows for the summary section
         const rows = [
             [headerTitle],                // Header Title
             [],                           // Empty Row for spacing
             ["Date", "Expenses", "Earnings"], // Column Headers
         ];
+    
+        // Add Summary Table
         Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
             rows.push([date, expense, earning]);
         });
-        rows.push([])
-        rows.push(["Total", summaryItems?.Expense, summaryItems?.Earning])
-        rows.push([])
-        const currentDate = dayjs().format("DD MMM, YYYY"); // Format date as '11 Dec, 2024'
+    
+        rows.push([]);
+        rows.push(["Total", summaryItems?.Expense, summaryItems?.Earning]);
+        rows.push([]);
+    
+        // Add Report Generated Date
+        const currentDate = dayjs().format("DD MMM, YYYY");
         rows.push([`Report generated on: ${currentDate}`]);
-
+        rows.push([]); // Empty row for spacing before detailed report
+    
+        // Add Detailed Report Header
+        rows.push(["Detailed Report"]);
+        rows.push([]);
+        rows.push(["Date", "Item Name", "Price", "Quantity", "Category", "Type"]); // Common Header
+    
+        // Add Date-Wise Detailed Summary
+        Object.entries(chartItems).forEach(([date]) => {
+            rows.push([date]); // Date in the first column
+            const records = items[date];
+            records.forEach((record) => {
+                rows.push([
+                    "", // Empty cell to align with the first column for date
+                    record.itemName,
+                    record.totalPrice,
+                    record.quantity,
+                    record.category,
+                    record.type,
+                ]);
+            });
+    
+            rows.push([]); // Empty row after each date's records
+        });
+    
+        // Create Worksheet
         const worksheet = XLSX.utils.aoa_to_sheet(rows);
-
-        worksheet["!merges"] = [{ s: { c: 0, r: 0 }, e: { c: 2, r: 0 } }]; // Merge A1:C1
-        worksheet["!cols"] = [{ wch: 18 }, { wch: 18 }, { wch: 18 }]; // Adjust width for each column
-
+    
+        // Merge Header Title (A1:C1)
+        worksheet["!merges"] = [{ s: { c: 0, r: 0 }, e: { c: 5, r: 0 } }];
+    
+        // Adjust Column Widths
+        worksheet["!cols"] = [
+            { wch: 18 }, // Date
+            { wch: 20 }, // Item Name
+            { wch: 15 }, // Quantity
+            { wch: 15 }, // Price
+            { wch: 20 }, // Category
+            { wch: 15 }, // Type
+        ];
+    
+        // Create Workbook and Append Worksheet
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Summary");
-
-        XLSX.writeFile(workbook, `Summary - ${Label}.xlsx`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Detailed Report");
+    
+        // Export File
+        XLSX.writeFile(workbook, `Detailed Summary - ${Label}.xlsx`);
     };
-
+    
+    
 
 const handleExportToPDF = () => {
     const doc = new jsPDF();
-
-    // Title Header - Centered
     const pageWidth = doc.internal.pageSize.getWidth();
+    const currentDate = dayjs().format("DD MMM, YYYY");
     const title = `Expenses & Earnings Summary - ${Label}`;
-    doc.setFontSize(16); // Font size for title
+    
+    // Add Title
+    doc.setFontSize(16); 
     const textWidth = doc.getTextWidth(title);
-    doc.text(title, (pageWidth - textWidth) / 2, 10); // Center the title
+    doc.text(title, (pageWidth - textWidth) / 2, 10); 
 
-    // Format data for the table
+    // Add Summary Table
     const tableRows = [];
     const startY = 20;
-    
     Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
         tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
     });
-
     tableRows.push([]);
     tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
 
-    // Auto Table with Centered Alignment
     doc.autoTable({
         head: [["Date", "Expenses", "Earnings"]],
         body: tableRows,
         startY,
-        styles: { fontSize: 14, halign: "center" }, // Center-align content
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" }, // Center-align headers
+        styles: { fontSize: 14, halign: "center" },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
     });
 
-    // Add a Bottom Caption with Formatted Date
-    const currentDate = dayjs().format("DD MMM, YYYY"); // Format date as '11 Dec, 2024'
+    // Add Report Generated Date Caption
     const caption = `Report generated on: ${currentDate}`;
-    doc.setFontSize(13); // Font size for caption
-    doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10); // Bottom right corner
+    doc.setFontSize(13);
+    doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10);
+
+    // Start Detailed Summary on New Page
+    doc.addPage();
+    doc.setFontSize(15);
+    const detailedSummaryTitle = "Detailed Summary";
+    const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
+    doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
+
+    // Iterate Through Items By Date
+    let detailedStartY = 20;
+    Object.entries(chartItems).forEach(([date]) => {
+        const records = items[date]
+        doc.setFontSize(14);
+        doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
+        detailedStartY += 10;
+
+        // Prepare Table Rows for Each Date
+        const detailedRows = records.map((record) => [
+            record.itemName,
+            `Rs. ${record.totalPrice}`,
+            record.quantity,
+            record.category,
+            record.type,
+        ]);
+
+        // Add Table for Current Date
+        doc.autoTable({
+            head: [["Item Name", "Quantity", "Price", "Category", "Type"]],
+            body: detailedRows,
+            startY: detailedStartY,
+            styles: { fontSize: 12, halign: "center" },
+            headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
+            margin: { top: 10 },
+        });
+
+        // Update Y Position for Next Date
+        detailedStartY = doc.lastAutoTable.finalY + 10;
+
+        // Add Page If Space is Insufficient
+        if (detailedStartY + 20 > doc.internal.pageSize.getHeight()) {
+            doc.addPage();
+            detailedStartY = 20;
+        }
+    });
 
     // Save PDF
     doc.save(`Summary - ${Label}.pdf`);

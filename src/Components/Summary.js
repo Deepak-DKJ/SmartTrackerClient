@@ -173,7 +173,8 @@ const Summary = () => {
 
 
   const [rangeType, setRangeType] = useState("period");
-  const [duration, setDuration] = useState(7);
+  // const [duration, setDuration] = useState(7);
+  const [duration, setDuration] = useState(localStorage.getItem('periodDuration') || 7);
   const [customStartDate, setCustomStartDate] = useState(dayjs());
   const [customEndDate, setCustomEndDate] = useState(dayjs());
 
@@ -188,6 +189,7 @@ const Summary = () => {
 
   const handleDurationChange = (event) => {
     setDuration(Number(event.target.value));
+    localStorage.setItem('periodDuration', Number(event.target.value))
   };
 
   // Nav tabs
@@ -382,7 +384,7 @@ const Summary = () => {
                               },
                               elements: {
                                 point: {
-                                  radius: 4.5, // Adjust point size as needed
+                                  radius: 6.5, // Adjust point size as needed
                                 },
                               },
                               plugins: {
