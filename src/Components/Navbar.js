@@ -131,9 +131,10 @@ function DrawerAppBar(props) {
         // Add Detailed Report Header
         rows.push(["Detailed Report"]);
         rows.push([]);
-        rows.push(["Date", "Item Name", "Price", "Quantity", "Category", "Type"]); // Common Header
+        rows.push(["Date", "Item Name", "Price","Quantity", "Category", "Type","Item Notes"]); // Common Header
     
         // Add Date-Wise Detailed Summary
+        console.log(items)
         Object.entries(chartItems).forEach(([date]) => {
             rows.push([date]); // Date in the first column
             const records = items[date];
@@ -145,6 +146,7 @@ function DrawerAppBar(props) {
                     record.quantity,
                     record.category,
                     record.type,
+                    record.desc === ""? "NA" : record.desc,
                 ]);
             });
     
@@ -161,6 +163,7 @@ function DrawerAppBar(props) {
         worksheet["!cols"] = [
             { wch: 18 }, // Date
             { wch: 20 }, // Item Name
+            { wch: 15 }, // NOtes
             { wch: 15 }, // Quantity
             { wch: 15 }, // Price
             { wch: 20 }, // Category
@@ -232,11 +235,12 @@ const handleExportToPDF = () => {
             record.quantity,
             record.category,
             record.type,
+            record.desc === ""? "NA" : record.desc,
         ]);
 
         // Add Table for Current Date
         doc.autoTable({
-            head: [["Item Name", "Quantity", "Price", "Category", "Type"]],
+            head: [["Item Name", "Quantity", "Price", "Category", "Type","Item Notes"]],
             body: detailedRows,
             startY: detailedStartY,
             styles: { fontSize: 12, halign: "center" },
