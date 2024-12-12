@@ -134,7 +134,7 @@ function DrawerAppBar(props) {
         rows.push(["Date", "Item Name", "Price","Quantity", "Category", "Type","Item Notes"]); // Common Header
     
         // Add Date-Wise Detailed Summary
-        console.log(items)
+        // console.log(items)
         Object.entries(chartItems).forEach(([date]) => {
             rows.push([date]); // Date in the first column
             const records = items[date];

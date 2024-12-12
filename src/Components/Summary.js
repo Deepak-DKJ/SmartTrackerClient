@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Box, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Select, MenuItem, Divider, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
+import { Box, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Select, MenuItem, Divider, Typography, Button, Card, CardContent, CircularProgress, Badge } from '@mui/material';
 import { MobileDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 
 
@@ -11,6 +11,9 @@ import Tab from '@mui/material/Tab';
 import { useTheme } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import AppBar from '@mui/material/AppBar';
+import StackedLineChartSharpIcon from "@mui/icons-material/StackedLineChartSharp";
+import PieChartOutlineSharpIcon from "@mui/icons-material/PieChartOutlineSharp";
+
 import {
   Table,
   TableBody,
@@ -21,7 +24,7 @@ import {
   Paper,
 } from '@mui/material';
 
-import { Line } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 // import { chartDays } from '../Config/data';
 
@@ -109,6 +112,40 @@ const Summary = () => {
     setSummaryItems(summaryData)
     // setShowProgress(false)
   };
+  const [showChart, setShowChart] = useState(0); // 0 for Line Chart, 1 for Pie Chart
+  useEffect(() => {
+    if (chartItems === null) return;
+
+    const categoryTotals = {}; // To store total expenses for each category
+    let grandTotal = 0; // To calculate the grand total of all expenses
+
+    // Iterate through chartItems
+    Object.entries(chartItems).forEach(([date]) => {
+      const records = items[date];
+
+      records.forEach((record) => {
+        const totalPrice = record.totalPrice;
+        const type = record.type;
+        const cat = record.category;
+
+        if (type === "Expense") {
+          // Add the expense to the respective category
+          categoryTotals[cat] = (categoryTotals[cat] || 0) + totalPrice;
+          grandTotal += totalPrice; // Update the grand total
+        }
+      });
+    });
+
+    // Convert categoryTotals into percentages for pie chart data
+    const pieData = Object.entries(categoryTotals).map(([category, total]) => ({
+      category,
+      total,
+      percentage: ((total / grandTotal) * 100).toFixed(2), // Calculate percentage
+    }));
+
+    setPieChartItems(pieData);
+  }, [chartItems]);
+
 
   const fetchChartsAndSummary = () => {
     // console.log(rangeType)
@@ -170,6 +207,8 @@ const Summary = () => {
     //   return;
     fetchChartsAndSummary();
   }, [items])
+
+  const [pieChartItems, setPieChartItems] = useState([]);
 
 
   const [rangeType, setRangeType] = useState("period");
@@ -344,69 +383,149 @@ const Summary = () => {
                       <>
                         <div style={{ width: '100%', maxWidth: 400, height: '49.5vh', margin: 'auto' }}>
 
-                          <Line
-                            data={{
-                              labels: labels,
-                              datasets: [
-                                {
-                                  label: 'Earnings',
-                                  data: earnings,
-                                  borderColor: 'orange',
-                                  // backgroundColor: 'rgba(251, 192, 147, 0.4)',
-                                },
-                                {
-                                  label: 'Expenses',
-                                  data: expenses,
-                                  borderColor: 'cyan',
-                                  // backgroundColor: 'rgba(103, 242, 209, 0.4)',
-                                },
-                              ],
-                            }}
-                            options={{
-                              maintainAspectRatio: false,
-                              scales: {
-                                x: {
-                                  title: {
-                                    display: true,
-                                    text: `${Label}`,
+                          {showChart === 0 && (
+                            <Line
+                              data={{
+                                labels: labels,
+                                datasets: [
+                                  {
+                                    label: 'Earnings',
+                                    data: earnings,
+                                    borderColor: 'orange',
+                                    // backgroundColor: 'rgba(251, 192, 147, 0.4)',
                                   },
-                                  grid: {
-                                    display: true, // Enable x-axis grid lines
-                                    color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                  {
+                                    label: 'Expenses',
+                                    data: expenses,
+                                    borderColor: 'cyan',
+                                    // backgroundColor: 'rgba(103, 242, 209, 0.4)',
                                   },
-                                },
-                                y: {
-                                  grid: {
-                                    display: true, // Enable y-axis grid lines
-                                    color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                ],
+                              }}
+                              options={{
+                                maintainAspectRatio: false,
+                                scales: {
+                                  x: {
+                                    title: {
+                                      display: true,
+                                      text: `${Label}`,
+                                    },
+                                    grid: {
+                                      display: true, // Enable x-axis grid lines
+                                      color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                    },
                                   },
-                                },
-                              },
-                              elements: {
-                                point: {
-                                  radius: 6.5, // Adjust point size as needed
-                                },
-                              },
-                              plugins: {
-                                legend: {
-                                  labels: {
-                                    font: { weight: "bold", size: 13 },
+                                  y: {
+                                    grid: {
+                                      display: true, // Enable y-axis grid lines
+                                      color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
+                                    },
                                   },
                                 },
-                              },
-                            }}
-                          />
+                                elements: {
+                                  point: {
+                                    radius: 6.5, // Adjust point size as needed
+                                  },
+                                },
+                                plugins: {
+                                  legend: {
+                                    labels: {
+                                      font: { weight: "bold", size: 13 },
+                                    },
+                                  },
+                                },
+                              }}
+                            />
+                          )}
 
-                          <hr />
 
-                          <Box display="flex" alignItems="center" justifyContent={"center"} mt={0}>
-                            <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
-                              Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
-                            </Typography>
 
-                            <Typography variant="body1" sx={{ ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
-                            </Typography>
+                          {showChart === 1 && (
+                            <div style={{ width: '100%', maxWidth: 400, height: '48.5vh', margin: 'auto' }}>
+                              <Box display="flex" alignItems="center" justifyContent={"center"} mb={2} mt={1}>
+                                <Typography variant="body1" sx={{ color: "#B0B0B0" }}>
+                                  Earnings <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Earning}</span>
+                                </Typography>
 
+                                <Typography variant="body1" sx={{ ml: 1.2, color: "#B0B0B0" }}>Expenses <span className="badge rounded-pill" style={{ backgroundColor: "white", color: "black" }}>Rs {summaryItems.Expense}</span>
+                                </Typography>
+
+                              </Box>
+                              <Pie
+                                data={{
+                                  labels: pieChartItems.map((item) => item.category),
+                                  datasets: [
+                                    {
+                                      data: pieChartItems.map((item) => item.total),
+                                      backgroundColor: [
+                                        "#FF6384", // Add colors for each category
+                                        "#36A2EB",
+                                        "#FFCE56",
+                                        "#4BC0C0",
+                                        "#9966FF",
+                                        "#FF9F40",
+                                      ],
+                                      hoverOffset: 4, // Offset for hover effect
+                                    },
+                                  ],
+                                }}
+                                options={{
+                                  plugins: {
+                                    tooltip: {
+                                      callbacks: {
+                                        label: function (context) {
+                                          const label = context.label || "";
+                                          const value = context.raw;
+                                          return `${label}: Rs. ${value}`; // Show value on hover
+                                        },
+                                      },
+                                    },
+                                    legend: {
+                                      display: true,
+                                      position: "bottom",
+                                    },
+                                  },
+                                }}
+                              />
+
+                            </div>
+                          )}
+                          <hr style={{ margin: "14px" }} />
+
+                          <Box display="flex" alignItems="center" justifyContent="center" >
+                            {/* Line Chart Button */}
+                            <Button
+                              onClick={() => setShowChart(0)}
+                              sx={{
+                                backgroundColor: showChart === 0 ? "white" : "#323232", // Highlighted color for active button
+                                color: showChart === 0 ? "black" : "#fff",
+                                borderRadius: "20px",
+                                fontWeight: "bold",
+                                padding: "2px 16px",
+                                margin: "0 6px"
+                              }}
+                              startIcon={<StackedLineChartSharpIcon />}
+                            >
+                              Line Chart
+                            </Button>
+
+                            {/* Pie Chart Button */}
+                            <Badge badgeContent={"new"} color="error">
+                              <Button
+                                onClick={() => setShowChart(1)}
+                                sx={{
+                                  backgroundColor: showChart === 1 ? "white" : "#323232", // Highlighted color for active button
+                                  color: showChart === 1 ? "black" : "#fff",
+                                  borderRadius: "20px",
+                                  fontWeight: "bold",
+                                  padding: "2px 16px",
+                                  margin: "0 6px",
+                                }}
+                                startIcon={<PieChartOutlineSharpIcon />}
+                              >
+                                Pie Chart
+                              </Button>
+                            </Badge>
                           </Box>
 
                         </div>
