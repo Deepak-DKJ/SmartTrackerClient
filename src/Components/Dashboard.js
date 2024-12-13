@@ -88,7 +88,7 @@ const getStringDate = (date) => {
 }
 
 const Dashboard = () => {
-  const { searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
+  const { catList, setCatList, searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
 
@@ -130,6 +130,7 @@ const Dashboard = () => {
     setSearchedItems(itemsForLastxDays)
     setShowProgress(false);
   };
+
   useEffect(() => {
     if (searchString === "") {
       setFilteredItems(searchedItems);
@@ -877,32 +878,20 @@ const Dashboard = () => {
                             <MenuItem value={"Earning"}>Earning</MenuItem>
                           </TextField>
 
-
                           <TextField
                             select
                             fullWidth
-                            label="Category"
-                            disabled={!edit || loading}
+                            label="Select Tag"
                             value={selectedItemCat}
                             onChange={(e) => setSelectedItemCat(e.target.value)}
-                            style={{ marginBottom: "20px", marginTop: "15px" }}
-                          >
+                            style={{ marginTop: "15px", marginBottom:"0px" }}
+
+                        >
                             <MenuItem value="Any">Any</MenuItem>
-                            <MenuItem value="Groceries">Groceries</MenuItem>
-                            <MenuItem value="Food & Drinks">Food & Drinks</MenuItem>
-                            <MenuItem value="Household">Household</MenuItem>
-                            <MenuItem value="Shopping">Shopping</MenuItem>
-                            <MenuItem value="Entertainment">Entertainment</MenuItem>
-                            <MenuItem value="Travel & Fuel">Travel & Fuel</MenuItem>
-                            <MenuItem value="Healthcare">Healthcare</MenuItem>
-                            <MenuItem value="Investment">Investment</MenuItem>
-                            <MenuItem value="Salary">Salary</MenuItem>
-                            <MenuItem value="Savings">Savings</MenuItem>
-                            <MenuItem value="Refund">Refund</MenuItem>
-                            <MenuItem value="Profit">Profit</MenuItem>
-                            <MenuItem value="Returns">Returns</MenuItem>
-                            <MenuItem value="Others">Others</MenuItem>
-                          </TextField>
+                            {catList.map((catgry) => (
+                                <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                            ))}
+                        </TextField>
                         </Box>
                       </DialogContent>
                     </>

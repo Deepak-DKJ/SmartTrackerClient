@@ -36,9 +36,19 @@ import { useNavigate } from 'react-router-dom';
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import "jspdf-autotable";
+
+import AddIcon from '@mui/icons-material/Add';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import {
+    Paper,
+    Chip,
+    Fab,
+} from '@mui/material';
+
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
 });
+
 
 
 const drawerWidth = 240;
@@ -57,6 +67,18 @@ const Search = styled('div')(({ theme }) => ({
     },
 }));
 
+const hardcodedCategories = [
+    "Groceries",
+    "Food/Drinks",
+    "Household",
+    "Shopping",
+    "Entertainment",
+    "Fuel/Travel",
+    "Healthcare",
+    "Investment",
+    "Salary",
+    "Others"
+];
 const SearchIconWrapper = styled('div')(({ theme }) => ({
     padding: theme.spacing(0, 0.7),
     height: '100%',
@@ -90,7 +112,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
+    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -103,36 +125,54 @@ function DrawerAppBar(props) {
         setOpenFilterModal(false);
     };
 
+    const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [newCategory, setNewCategory] = React.useState("");
+    const handleAddCategory = () => {
+        if (newCategory.trim() && !catList.includes(newCategory.trim())) {
+            setCatList((categories) => [...categories, newCategory.trim()]);
+            setNewCategory(""); // Reset input
+        }
+    };
+
+    const handleSave = () => {
+        localStorage.setItem("catList", JSON.stringify(catList));
+        console.log("hello")
+        setDialogOpen(false); // Close dialog after saving
+    };
+
+    const handleDelete = (categoryToDelete) => () => {
+        setCatList((categories) => categories.filter((cat) => cat !== categoryToDelete));
+    };
 
     const handleExportToExcel = () => {
         const headerTitle = `Expenses & Earnings Summary - ${Label}`;
-    
+
         // Rows for the summary section
         const rows = [
             [headerTitle],                // Header Title
             [],                           // Empty Row for spacing
             ["Date", "Expenses", "Earnings"], // Column Headers
         ];
-    
+
         // Add Summary Table
         Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
             rows.push([date, expense, earning]);
         });
-    
+
         rows.push([]);
         rows.push(["Total", summaryItems?.Expense, summaryItems?.Earning]);
         rows.push([]);
-    
+
         // Add Report Generated Date
         const currentDate = dayjs().format("DD MMM, YYYY");
         rows.push([`Report generated on: ${currentDate}`]);
         rows.push([]); // Empty row for spacing before detailed report
-    
+
         // Add Detailed Report Header
         rows.push(["Detailed Report"]);
         rows.push([]);
-        rows.push(["Date", "Item Name", "Price","Quantity", "Category", "Type","Item Notes"]); // Common Header
-    
+        rows.push(["Date", "Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]); // Common Header
+
         // Add Date-Wise Detailed Summary
         // console.log(items)
         Object.entries(chartItems).forEach(([date]) => {
@@ -146,19 +186,19 @@ function DrawerAppBar(props) {
                     record.quantity,
                     record.category,
                     record.type,
-                    record.desc === ""? "NA" : record.desc,
+                    record.desc === "" ? "NA" : record.desc,
                 ]);
             });
-    
+
             rows.push([]); // Empty row after each date's records
         });
-    
+
         // Create Worksheet
         const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    
+
         // Merge Header Title (A1:C1)
         worksheet["!merges"] = [{ s: { c: 0, r: 0 }, e: { c: 5, r: 0 } }];
-    
+
         // Adjust Column Widths
         worksheet["!cols"] = [
             { wch: 18 }, // Date
@@ -169,100 +209,100 @@ function DrawerAppBar(props) {
             { wch: 20 }, // Category
             { wch: 15 }, // Type
         ];
-    
+
         // Create Workbook and Append Worksheet
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Detailed Report");
-    
+
         // Export File
         XLSX.writeFile(workbook, `Detailed Summary - ${Label}.xlsx`);
     };
-    
-    
 
-const handleExportToPDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const currentDate = dayjs().format("DD MMM, YYYY");
-    const title = `Expenses & Earnings Summary - ${Label}`;
-    
-    // Add Title
-    doc.setFontSize(16); 
-    const textWidth = doc.getTextWidth(title);
-    doc.text(title, (pageWidth - textWidth) / 2, 10); 
 
-    // Add Summary Table
-    const tableRows = [];
-    const startY = 20;
-    Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
-        tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
-    });
-    tableRows.push([]);
-    tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
 
-    doc.autoTable({
-        head: [["Date", "Expenses", "Earnings"]],
-        body: tableRows,
-        startY,
-        styles: { fontSize: 14, halign: "center" },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-    });
+    const handleExportToPDF = () => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const currentDate = dayjs().format("DD MMM, YYYY");
+        const title = `Expenses & Earnings Summary - ${Label}`;
 
-    // Add Report Generated Date Caption
-    const caption = `Report generated on: ${currentDate}`;
-    doc.setFontSize(13);
-    doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10);
+        // Add Title
+        doc.setFontSize(16);
+        const textWidth = doc.getTextWidth(title);
+        doc.text(title, (pageWidth - textWidth) / 2, 10);
 
-    // Start Detailed Summary on New Page
-    doc.addPage();
-    doc.setFontSize(15);
-    const detailedSummaryTitle = "Detailed Summary";
-    const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
-    doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
+        // Add Summary Table
+        const tableRows = [];
+        const startY = 20;
+        Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+            tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
+        });
+        tableRows.push([]);
+        tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
 
-    // Iterate Through Items By Date
-    let detailedStartY = 20;
-    Object.entries(chartItems).forEach(([date]) => {
-        const records = items[date]
-        doc.setFontSize(14);
-        doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
-        detailedStartY += 10;
-
-        // Prepare Table Rows for Each Date
-        const detailedRows = records.map((record) => [
-            record.itemName,
-            `Rs. ${record.totalPrice}`,
-            record.quantity,
-            record.category,
-            record.type,
-            record.desc === ""? "NA" : record.desc,
-        ]);
-
-        // Add Table for Current Date
         doc.autoTable({
-            head: [["Item Name", "Quantity", "Price", "Category", "Type","Item Notes"]],
-            body: detailedRows,
-            startY: detailedStartY,
-            styles: { fontSize: 12, halign: "center" },
+            head: [["Date", "Expenses", "Earnings"]],
+            body: tableRows,
+            startY,
+            styles: { fontSize: 14, halign: "center" },
             headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-            margin: { top: 10 },
         });
 
-        // Update Y Position for Next Date
-        detailedStartY = doc.lastAutoTable.finalY + 10;
+        // Add Report Generated Date Caption
+        const caption = `Report generated on: ${currentDate}`;
+        doc.setFontSize(13);
+        doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10);
 
-        // Add Page If Space is Insufficient
-        if (detailedStartY + 20 > doc.internal.pageSize.getHeight()) {
-            doc.addPage();
-            detailedStartY = 20;
-        }
-    });
+        // Start Detailed Summary on New Page
+        doc.addPage();
+        doc.setFontSize(15);
+        const detailedSummaryTitle = "Detailed Summary";
+        const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
+        doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
 
-    // Save PDF
-    doc.save(`Summary - ${Label}.pdf`);
-};
+        // Iterate Through Items By Date
+        let detailedStartY = 20;
+        Object.entries(chartItems).forEach(([date]) => {
+            const records = items[date]
+            doc.setFontSize(14);
+            doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
+            detailedStartY += 10;
 
-    
+            // Prepare Table Rows for Each Date
+            const detailedRows = records.map((record) => [
+                record.itemName,
+                `Rs. ${record.totalPrice}`,
+                record.quantity,
+                record.category,
+                record.type,
+                record.desc === "" ? "NA" : record.desc,
+            ]);
+
+            // Add Table for Current Date
+            doc.autoTable({
+                head: [["Item Name", "Quantity", "Price", "Category", "Type", "Item Notes"]],
+                body: detailedRows,
+                startY: detailedStartY,
+                styles: { fontSize: 12, halign: "center" },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
+                margin: { top: 10 },
+            });
+
+            // Update Y Position for Next Date
+            detailedStartY = doc.lastAutoTable.finalY + 10;
+
+            // Add Page If Space is Insufficient
+            if (detailedStartY + 20 > doc.internal.pageSize.getHeight()) {
+                doc.addPage();
+                detailedStartY = 20;
+            }
+        });
+
+        // Save PDF
+        doc.save(`Summary - ${Label}.pdf`);
+    };
+
+
     const getStringDate = (date) => {
         // const date = new Date();
         const dd = String(date.getDate()).padStart(2, '0');
@@ -286,6 +326,10 @@ const handleExportToPDF = () => {
         localStorage.removeItem('token');
         navigate("/smart-tracker")
     }
+
+    const ListItem = styled('li')(({ theme }) => ({
+        margin: theme.spacing(0.5),
+    }));
 
     const drawer = (
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -379,6 +423,7 @@ const handleExportToPDF = () => {
 
     const container = window !== undefined ? () => window().document.body : undefined;
 
+
     return (
         <>
 
@@ -437,20 +482,9 @@ const handleExportToPDF = () => {
 
                         >
                             <MenuItem value="Any">Any</MenuItem>
-                            <MenuItem value="Groceries">Groceries</MenuItem>
-                            <MenuItem value="Food & Drinks">Food & Drinks</MenuItem>
-                            <MenuItem value="Household">Household</MenuItem>
-                            <MenuItem value="Shopping">Shopping</MenuItem>
-                            <MenuItem value="Entertainment">Entertainment</MenuItem>
-                            <MenuItem value="Travel & Fuel">Travel & Fuel</MenuItem>
-                            <MenuItem value="Healthcare">Healthcare</MenuItem>
-                            <MenuItem value="Investment">Investment</MenuItem>
-                            <MenuItem value="Salary">Salary</MenuItem>
-                            <MenuItem value="Savings">Savings</MenuItem>
-                            <MenuItem value="Refund">Refund</MenuItem>
-                            <MenuItem value="Profit">Profit</MenuItem>
-                            <MenuItem value="Returns">Returns</MenuItem>
-                            <MenuItem value="Others">Others</MenuItem>
+                            {catList.map((catgry) => (
+                                <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                            ))}
                         </TextField>
                     </Box>
                 </DialogContent>
@@ -504,6 +538,7 @@ const handleExportToPDF = () => {
                                 <Typography variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
+
                                 {searchString === "" ? (
                                     <Tooltip title="Filters" arrow>
                                         <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
@@ -534,6 +569,82 @@ const handleExportToPDF = () => {
                                 <Typography sx={{ ml: 7 }} variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
+                                <Tooltip title="Configure Tags" arrow>
+                                    <LocalOfferIcon
+                                        onClick={() => { console.log(catList); setDialogOpen(true) }}
+                                        sx={{ marginLeft: 'auto', fontSize: "27px", marginRight: "4px" }}
+                                    />
+                                </Tooltip>
+
+
+                                <div>
+                                    <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+                                        <DialogTitle>Manage Categories</DialogTitle>
+                                        {console.log(catList)}
+                                        <DialogContent>
+                                            <Paper
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    flexWrap: 'wrap',
+                                                    listStyle: 'none',
+                                                    p: 0.5,
+                                                    m: 0,
+                                                }}
+                                                component="ul"
+                                            >
+                                                {catList.map((category, index) => (
+                                                    <ListItem key={index}>
+                                                        <Chip
+                                                            label={category}
+                                                            onDelete={!hardcodedCategories.includes(category) ? handleDelete(category) : undefined}
+                                                            color={hardcodedCategories.includes(category) ? "default" : "primary"} // Optional to differentiate
+                                                        />
+
+                                                    </ListItem>
+                                                ))}
+                                            </Paper>
+
+                                            {/* Add New Category */}
+                                            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                                                <TextField
+                                                    label="New Category"
+                                                    value={newCategory}
+                                                    onChange={(e) => setNewCategory(e.target.value)}
+                                                    fullWidth
+                                                />
+                                                <Fab
+                                                    size="small" // Ensures proper dimensions
+                                                    onClick={handleAddCategory}
+                                                    sx={{
+                                                        marginLeft: 1.5,
+                                                        width: 50, // Ensures a perfect circular size
+                                                        height: 45,
+                                                        padding: "10px",
+                                                        backgroundColor:"white",
+                                                        color:"black"
+                                                    }}
+                                                >
+                                                    <AddIcon />
+                                                </Fab>
+
+                                            </Box>
+                                        </DialogContent>
+
+                                        <Box
+                                            sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                                        >
+                                            <Button
+                                                onClick={handleSave}
+                                                color="primary"
+                                                variant="contained"
+                                                sx={{ marginBottom: "20px" }}
+                                            >
+                                                Save
+                                            </Button>
+                                        </Box>
+                                    </Dialog>
+                                </div>
                             </>
                         )}
 
