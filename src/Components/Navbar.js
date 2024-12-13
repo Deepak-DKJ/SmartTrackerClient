@@ -636,9 +636,8 @@ function DrawerAppBar(props) {
                                         >
                                             <Button
                                                 onClick={handleSave}
-                                                color="primary"
                                                 variant="contained"
-                                                sx={{ marginBottom: "20px" }}
+                                                sx={{ marginBottom: "20px", color:"black", backgroundColor:"white" }}
                                             >
                                                 Save
                                             </Button>
