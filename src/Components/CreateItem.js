@@ -11,6 +11,7 @@ import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 import { TrackerContext } from '../Context/TrackerContext';
 import { SwapSpinner } from 'react-spinners-kit';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import TouchAppIcon from '@mui/icons-material/TouchApp';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 const getStringDate = (date) => {
   // const date = new Date();
@@ -250,7 +251,7 @@ function CreateItem() {
               ADD ENTRY
             </Typography> */}
 
-        <Box id="createpagebox" sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <Box
             sx={{
               display: 'flex',
@@ -287,7 +288,7 @@ function CreateItem() {
                 textAlign: 'center',
               }}
             >
-              👆🏻 Tap the mic for voice-based input! 
+              <TouchAppIcon /> Tap the mic for voice-based input! 
             </Typography>
           </Box>
 
