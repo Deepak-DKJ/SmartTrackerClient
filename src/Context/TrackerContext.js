@@ -33,8 +33,8 @@ const TrackerProvider = ({ children }) => {
     const [searchString, setSearchString] = useState("")
     const [searchString2, setSearchString2] = useState("")
   const [valueNav, setValueNav] = useState(1);
-    // const [baseUrl, setBaseUrl] = useState('https://smart-tracker-server.vercel.app/api')
-    const [baseUrl, setBaseUrl] = useState("http://localhost:8000/api")
+    const [baseUrl, setBaseUrl] = useState('https://smart-tracker-server.vercel.app/api')
+    // const [baseUrl, setBaseUrl] = useState("http://localhost:8000/api")
     return (
         <TrackerContext.Provider value={{catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl }}>
             {children}
