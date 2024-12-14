@@ -98,7 +98,7 @@ function CreateItem() {
   const handleSubmit = async () => {
     if (listening) {
       SpeechRecognition.stopListening();
-    } 
+    }
     if (inputMsg === "") {
       setAiMsg("Please enter the missing details!")
       const btn = document.getElementById("infosnackbar");
@@ -152,7 +152,7 @@ function CreateItem() {
   useEffect(() => {
     setInputMsg(transcript);
   }, [transcript]);
-  
+
   useEffect(() => {
     if (listening) {
       setInputMsg("");
@@ -182,7 +182,7 @@ function CreateItem() {
     }
   };
 
-  
+
 
 
   return (
@@ -264,21 +264,21 @@ function CreateItem() {
             }}
           >
             <div id="mic"
-        className={listening ? 'mic-container active' : 'mic-container'}
-        onClick={handleMicClick}
-      >
-        <KeyboardVoiceIcon
-          fontSize="large"
-          sx={{
-            color: listening ? 'black' : 'cyan',
-            backgroundColor: listening ? 'cyan' : 'black',
-            borderRadius: '50%',
-            p: 0,
-            fontSize: listening === true ? '95px' : '85px',
-            transition: 'background-color 0.3s ease, color 0.3s ease',
-          }}
-        />
-      </div>
+              className={listening ? 'mic-container active' : 'mic-container'}
+              onClick={handleMicClick}
+            >
+              <KeyboardVoiceIcon
+                fontSize="large"
+                sx={{
+                  color: listening ? 'black' : 'cyan',
+                  backgroundColor: listening ? 'cyan' : 'black',
+                  borderRadius: '50%',
+                  p: 0,
+                  fontSize: listening === true ? '95px' : '85px',
+                  transition: 'background-color 0.3s ease, color 0.3s ease',
+                }}
+              />
+            </div>
             <Typography
               variant="body2"
               sx={{
@@ -288,7 +288,7 @@ function CreateItem() {
                 textAlign: 'center',
               }}
             >
-              <TouchAppIcon fontSize={"small"} /> Tap the mic for voice-based input! 
+              <TouchAppIcon fontSize={"small"} /> Tap the mic for voice-based input!
             </Typography>
           </Box>
 
@@ -304,20 +304,20 @@ function CreateItem() {
             fullWidth
             sx={{ bgcolor: 'background.paper', borderRadius: '4px' }}
           />
-          <div  style={{
-    width: '100%', // Makes the wrapper span the full width
-    display: 'flex',
-    justifyContent: 'center',
-  }} onClick={() => SpeechRecognition.stopListening()}>
-          <MobileDatePicker
-            sx={{ backgroundColor: '#1e1e1e', width: '100%', textAlign: 'center', marginTop: '25px' }}
-            label="Select Date"
-            value={selectedDate}
-            closeOnSelect={true}
-            onChange={handleDateChange}
-            format="DD MMM, YYYY"
-            disableFuture={true}
-          />
+          <div style={{
+            width: '100%', // Makes the wrapper span the full width
+            display: 'flex',
+            justifyContent: 'center',
+          }} onClick={() => SpeechRecognition.stopListening()}>
+            <MobileDatePicker
+              sx={{ backgroundColor: '#1e1e1e', width: '100%', textAlign: 'center', marginTop: '25px' }}
+              label="Select Date"
+              value={selectedDate}
+              closeOnSelect={true}
+              onChange={handleDateChange}
+              format="DD MMM, YYYY"
+              disableFuture={true}
+            />
           </div>
 
           <Button
