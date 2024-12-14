@@ -475,7 +475,10 @@ const Summary = () => {
                                         label: function (context) {
                                           const label = context.label || "";
                                           const value = context.raw;
-                                          return `${label}: Rs. ${value}`; // Show value on hover
+                                          let percentage = 0;
+                                          if (summaryItems?.Expense !== 0)
+                                          percentage = Math.round((value / summaryItems?.Expense) * 100); 
+                                          return ` ${percentage}% : Rs. ${value}`; // Show value on hover
                                         },
                                       },
                                     },
