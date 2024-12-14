@@ -288,7 +288,7 @@ function CreateItem() {
                 textAlign: 'center',
               }}
             >
-              <TouchAppIcon /> Tap the mic for voice-based input! 
+              <TouchAppIcon fontSize={"small"} /> Tap the mic for voice-based input! 
             </Typography>
           </Box>
 
