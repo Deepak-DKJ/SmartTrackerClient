@@ -250,7 +250,7 @@ function CreateItem() {
               ADD ENTRY
             </Typography> */}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <Box id="createpagebox" sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <Box
             sx={{
               display: 'flex',

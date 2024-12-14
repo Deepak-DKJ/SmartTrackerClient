@@ -463,7 +463,6 @@ const Summary = () => {
                                         "#FFCE56",
                                         "#4BC0C0",
                                         "#9966FF",
-                                        "#FF9F40",
                                       ],
                                       hoverOffset: 4, // Offset for hover effect
                                     },

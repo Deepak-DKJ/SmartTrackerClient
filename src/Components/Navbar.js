@@ -29,7 +29,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, TextField, Tooltip } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -133,11 +133,25 @@ function DrawerAppBar(props) {
             setNewCategory(""); // Reset input
         }
     };
+    const [alert, setAlert] = React.useState({
+        vis: false,
+        msg: "",
+    });
+
 
     const handleSave = () => {
-        localStorage.setItem("catList", JSON.stringify(catList));
-        console.log("hello")
+        if (newCategory.trim() && !catList.includes(newCategory.trim())) {
+            const updatedCatList = [...catList, newCategory.trim()]; // Create updated list
+            setCatList(updatedCatList); // Update state
+            localStorage.setItem("catList", JSON.stringify(updatedCatList)); // Store updated list
+        }
+        else localStorage.setItem("catList", JSON.stringify(catList));
+        setNewCategory(""); // Reset input
         setDialogOpen(false); // Close dialog after saving
+        setAlert({
+            "vis": true,
+            "msg": "Categories modified successfully !"
+        })
     };
 
     const handleDelete = (categoryToDelete) => () => {
@@ -426,7 +440,25 @@ function DrawerAppBar(props) {
 
     return (
         <>
+            <Box sx={{ display: 'flex' }}>
+                <CssBaseline />
+                <AppBar component="nav">
+                    <Toolbar>
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="start"
+                            onClick={handleDrawerToggle}
+                            sx={{ mr: 2, display: { sm: 'none' } }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        {/* Smart Tracker */}
 
+
+                        {page === 'dashboard' && (
+                            <>  
+                                
             <Dialog
                 open={openFilterModal}
                 onClose={handleCloseFilterModal}
@@ -516,25 +548,6 @@ function DrawerAppBar(props) {
                     </Button>
                 </Box>
             </Dialog>
-
-            <Box sx={{ display: 'flex' }}>
-                <CssBaseline />
-                <AppBar component="nav">
-                    <Toolbar>
-                        <IconButton
-                            color="inherit"
-                            aria-label="open drawer"
-                            edge="start"
-                            onClick={handleDrawerToggle}
-                            sx={{ mr: 2, display: { sm: 'none' } }}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        {/* Smart Tracker */}
-
-
-                        {page === 'dashboard' && (
-                            <>
                                 <Typography variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
@@ -566,21 +579,57 @@ function DrawerAppBar(props) {
 
                         {page === 'create' && (
                             <>
+
                                 <Typography sx={{ ml: 7 }} variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
                                 <Tooltip title="Configure Tags" arrow>
                                     <LocalOfferIcon
-                                        onClick={() => { console.log(catList); setDialogOpen(true) }}
+                                        onClick={() => {
+                                            setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
+                                            setDialogOpen(true)
+                                        }}
                                         sx={{ marginLeft: 'auto', fontSize: "27px", marginRight: "4px" }}
                                     />
                                 </Tooltip>
 
+                                <Snackbar
+                                    autoHideDuration={3000}
+                                    anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                                    open={alert.vis}
+                                    onClose={() => {
+                                        setAlert({
+                                            vis: false,
+                                            msg: "",
+                                        });
+                                    }}
+                                    sx={{
+                                        position: "fixed",
+                                        top: "8.2vh"
+                                    }}
+                                    TransitionComponent={Slide}
+                                    message={alert.msg}
 
-                                <div>
-                                    <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+                                    ContentProps={{
+                                        style: {
+                                            backgroundColor: "#333",  // Dark background
+                                            color: "#fff",            // Light text color
+                                        },
+                                    }}
+                                />
+
+
+                                <Box>
+                                    <Dialog open={dialogOpen} onClose={() =>
+                                        setDialogOpen(false)
+                                    }
+                                        TransitionComponent={Transition}
+                                        fullWidth maxWidth="sm" BackdropProps={{
+                                            sx: {
+                                                backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                            },
+                                        }}>
                                         <DialogTitle>Manage Categories</DialogTitle>
-                                        {console.log(catList)}
                                         <DialogContent>
                                             <Paper
                                                 sx={{
@@ -621,8 +670,8 @@ function DrawerAppBar(props) {
                                                         width: 50, // Ensures a perfect circular size
                                                         height: 45,
                                                         padding: "10px",
-                                                        backgroundColor:"white",
-                                                        color:"black"
+                                                        backgroundColor: "white",
+                                                        color: "black"
                                                     }}
                                                 >
                                                     <AddIcon />
@@ -637,13 +686,13 @@ function DrawerAppBar(props) {
                                             <Button
                                                 onClick={handleSave}
                                                 variant="contained"
-                                                sx={{ marginBottom: "20px", color:"black", backgroundColor:"white" }}
+                                                sx={{ marginBottom: "20px", color: "black", backgroundColor: "white" }}
                                             >
                                                 Save
                                             </Button>
                                         </Box>
                                     </Dialog>
-                                </div>
+                                </Box>
                             </>
                         )}
 
