@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { replace, useNavigate } from 'react-router-dom';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Box, Slide, Snackbar } from '@mui/material';
 import { RingSpinner } from 'react-spinners-kit';
@@ -19,7 +19,6 @@ const GoogleLoginButton = () => {
 
     const handleGoogleLogin = async (response) => {
         setLoading(true);
-
         try {
             // Send the Google token to the backend
             const { data } = await axios.post(`${baseUrl}/auth/google/callback`, {
@@ -32,7 +31,9 @@ const GoogleLoginButton = () => {
 
             // Reset loading state and navigate to the dashboard
             setLoading(false);
-            navigate('/smart-tracker/create');
+            
+            // console.log("Navigating with replace:", replace);
+            navigate('/smart-tracker/create', { replace: true });
         } catch (err) {
             setLoading(false);
             setAlert({

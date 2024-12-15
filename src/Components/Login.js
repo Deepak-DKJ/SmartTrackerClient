@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react'
-import { Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react'
+import { Link, replace } from 'react-router-dom';
 import axios from 'axios'
 import { TrackerContext } from '../Context/TrackerContext';
 import { useNavigate } from 'react-router-dom'
@@ -40,7 +40,8 @@ const Login = () => {
       setEmail("")
       setPassword("")
       setLoading(false)
-      navigate('/smart-tracker/create')
+      // console.log("Navigating with replace:", replace);
+      navigate('/smart-tracker/create', { replace: true });
     }
     catch (err) {
       setLoading(false)

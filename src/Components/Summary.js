@@ -122,7 +122,8 @@ const Summary = () => {
     // Iterate through chartItems
     Object.entries(chartItems).forEach(([date]) => {
       const records = items[date];
-
+      if(!records)
+        return
       records.forEach((record) => {
         const totalPrice = record.totalPrice;
         const type = record.type;
