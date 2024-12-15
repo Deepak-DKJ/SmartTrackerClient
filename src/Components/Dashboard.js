@@ -883,6 +883,7 @@ const Dashboard = () => {
                             fullWidth
                             label="Select Tag"
                             value={selectedItemCat}
+                            disabled={!edit || loading}
                             onChange={(e) => setSelectedItemCat(e.target.value)}
                             style={{ marginTop: "15px", marginBottom:"0px" }}
 
