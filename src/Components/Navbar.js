@@ -294,7 +294,7 @@ function DrawerAppBar(props) {
 
             // Add Table for Current Date
             doc.autoTable({
-                head: [["Item Name", "Quantity", "Price", "Category", "Type", "Item Notes"]],
+                head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
                 body: detailedRows,
                 startY: detailedStartY,
                 styles: { fontSize: 12, halign: "center" },
