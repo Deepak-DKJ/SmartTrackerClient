@@ -11,6 +11,10 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import MicOutlinedIcon from '@mui/icons-material/MicOutlined';
+import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
+import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
+
 import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -29,7 +33,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, Snackbar, TextField, Tooltip } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +43,7 @@ import "jspdf-autotable";
 
 import AddIcon from '@mui/icons-material/Add';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import InfoIcon from '@mui/icons-material/Info';
 import {
     Paper,
     Chip,
@@ -79,6 +84,16 @@ const hardcodedCategories = [
     "Salary",
     "Others"
 ];
+const sampleInputs = [
+    "Flat rent paid 18.5k",
+    "Laundry 370 rupees",
+    "Amazonpay cashback 750",
+    "25 kilo aata ek hazar rupya",
+    "Netflix subscription 499 rs",
+    "Petrol 430 rs 4.1 litres",
+    "Antibiotic 5 tablets 132 rs",
+    "Salary credited 1.1 lakhs",
+];
 const SearchIconWrapper = styled('div')(({ theme }) => ({
     padding: theme.spacing(0, 0.7),
     height: '100%',
@@ -112,7 +127,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems } = React.useContext(TrackerContext);
+    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -126,6 +141,11 @@ function DrawerAppBar(props) {
     };
 
     const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [showInfo, setShowInfo] = React.useState(() => {
+        const storedValue = localStorage.getItem('showInfo');
+        return storedValue !== null ? JSON.parse(storedValue) : true;
+    });
+    
     const [newCategory, setNewCategory] = React.useState("");
     const handleAddCategory = () => {
         if (newCategory.trim() && !catList.includes(newCategory.trim())) {
@@ -138,7 +158,14 @@ function DrawerAppBar(props) {
         msg: "",
     });
 
-
+    const handleUnderstand = () => {
+        setShowInfo(false);
+        localStorage.setItem('showInfo', false)
+    }
+    const handleTry = (input) => {
+       handleUnderstand(); // Close dialog after trying the input
+        setInputMsg(input);
+    };
     const handleSave = () => {
         if (newCategory.trim() && !catList.includes(newCategory.trim())) {
             const updatedCatList = [...catList, newCategory.trim()]; // Create updated list
@@ -338,6 +365,11 @@ function DrawerAppBar(props) {
         setItems({})
         setFilteredItems({})
         localStorage.removeItem('token');
+        localStorage.removeItem('periodDuration');
+        // localStorage.removeItem('userData');
+        localStorage.removeItem('userdata');
+        localStorage.removeItem('showInfo');
+        localStorage.removeItem('filterLocal');
         navigate("/smart-tracker")
     }
 
@@ -449,7 +481,7 @@ function DrawerAppBar(props) {
                             aria-label="open drawer"
                             edge="start"
                             onClick={handleDrawerToggle}
-                            sx={{ mr: 2, display: { sm: 'none' } }}
+                            sx={{ mr: page === "reports" ? 0 : 2, display: { sm: "none" } }}
                         >
                             <MenuIcon />
                         </IconButton>
@@ -457,97 +489,97 @@ function DrawerAppBar(props) {
 
 
                         {page === 'dashboard' && (
-                            <>  
-                                
-            <Dialog
-                open={openFilterModal}
-                onClose={handleCloseFilterModal}
-                maxWidth="xs"
-                keepMounted
-                TransitionComponent={Transition}
+                            <>
 
-                BackdropProps={{
-                    style: {
-                        backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    },
-                }}
-            >
-                <DialogTitle>Filter Options</DialogTitle>
-                <DialogContent>
-                    <Box>
-                        {/* Last X Days Selection */}
-                        <TextField
-                            select
-                            fullWidth
-                            label="Select Duration"
-                            value={daysNumber}
-                            onChange={(e) => setDaysNumber(parseInt(e.target.value, 10))}
-                            style={{ marginBottom: "20px", marginTop: "20px" }}
-                        >
-                            <MenuItem value={7}>One week</MenuItem>
-                            <MenuItem value={30}>One month </MenuItem>
-                            <MenuItem value={180}>Six months </MenuItem>
-                            <MenuItem value={365}>One year </MenuItem>
-                        </TextField>
+                                <Dialog
+                                    open={openFilterModal}
+                                    onClose={handleCloseFilterModal}
+                                    maxWidth="xs"
+                                    keepMounted
+                                    TransitionComponent={Transition}
 
-                        {/* Type Selection */}
-                        <TextField
-                            select
-                            fullWidth
-                            label="Select Type"
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            style={{ marginBottom: "15px" }}
-                        >
-                            <MenuItem value="All">Any</MenuItem>
-                            <MenuItem value="Expense">Expense</MenuItem>
-                            <MenuItem value="Earning">Earning</MenuItem>
-                        </TextField>
+                                    BackdropProps={{
+                                        style: {
+                                            backgroundColor: "rgba(0, 0, 0, 0.8)",
+                                        },
+                                    }}
+                                >
+                                    <DialogTitle>Filter Options</DialogTitle>
+                                    <DialogContent>
+                                        <Box>
+                                            {/* Last X Days Selection */}
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                label="Select Duration"
+                                                value={daysNumber}
+                                                onChange={(e) => setDaysNumber(parseInt(e.target.value, 10))}
+                                                style={{ marginBottom: "20px", marginTop: "20px" }}
+                                            >
+                                                <MenuItem value={7}>One week</MenuItem>
+                                                <MenuItem value={30}>One month </MenuItem>
+                                                <MenuItem value={180}>Six months </MenuItem>
+                                                <MenuItem value={365}>One year </MenuItem>
+                                            </TextField>
 
-                        <TextField
-                            select
-                            fullWidth
-                            label="Select Tag"
-                            value={catType}
-                            onChange={(e) => setCatType(e.target.value)}
-                            style={{ marginBottom: "15px" }}
+                                            {/* Type Selection */}
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                label="Select Type"
+                                                value={filterType}
+                                                onChange={(e) => setFilterType(e.target.value)}
+                                                style={{ marginBottom: "15px" }}
+                                            >
+                                                <MenuItem value="All">Any</MenuItem>
+                                                <MenuItem value="Expense">Expense</MenuItem>
+                                                <MenuItem value="Earning">Earning</MenuItem>
+                                            </TextField>
 
-                        >
-                            <MenuItem value="Any">Any</MenuItem>
-                            {catList.map((catgry) => (
-                                <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
-                            ))}
-                        </TextField>
-                    </Box>
-                </DialogContent>
-                <Box
-                    sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-                >
-                    <Button
-                        onClick={() => {
-                            setFilters({
-                                lastxdays: daysNumber,
-                                type: filterType,
-                                cat: catType
-                            });
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                label="Select Tag"
+                                                value={catType}
+                                                onChange={(e) => setCatType(e.target.value)}
+                                                style={{ marginBottom: "15px" }}
 
-                            localStorage.setItem('filterLocal', JSON.stringify({
-                                lastxdays: daysNumber,
-                                type: filterType,
-                                cat: catType
-                            }))
-                            // Handle filter application here
-                            //   getLastxDaysData(filters.lastxdays)
-                            handleCloseFilterModal();
-                        }}
-                        color="primary"
-                        variant="contained"
-                        sx={{ marginBottom: "20px" }}
-                    >
-                        Apply Filters
-                    </Button>
-                </Box>
-            </Dialog>
+                                            >
+                                                <MenuItem value="Any">Any</MenuItem>
+                                                {catList.map((catgry) => (
+                                                    <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Box>
+                                    </DialogContent>
+                                    <Box
+                                        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                                    >
+                                        <Button
+                                            onClick={() => {
+                                                setFilters({
+                                                    lastxdays: daysNumber,
+                                                    type: filterType,
+                                                    cat: catType
+                                                });
+
+                                                localStorage.setItem('filterLocal', JSON.stringify({
+                                                    lastxdays: daysNumber,
+                                                    type: filterType,
+                                                    cat: catType
+                                                }))
+                                                // Handle filter application here
+                                                //   getLastxDaysData(filters.lastxdays)
+                                                handleCloseFilterModal();
+                                            }}
+                                            color="primary"
+                                            variant="contained"
+                                            sx={{ marginBottom: "20px", fontWeight:"bold" }}
+                                        >
+                                            Apply Filters
+                                        </Button>
+                                    </Box>
+                                </Dialog>
                                 <Typography variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
@@ -580,7 +612,7 @@ function DrawerAppBar(props) {
                         {page === 'create' && (
                             <>
 
-                                <Typography sx={{ ml: 7 }} variant="h6" noWrap component="div">
+                                <Typography sx={{ ml: 4 }} variant="h6" noWrap component="div">
                                     Smart Tracker
                                 </Typography>
                                 <Tooltip title="Configure Tags" arrow>
@@ -589,7 +621,13 @@ function DrawerAppBar(props) {
                                             setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
                                             setDialogOpen(true)
                                         }}
-                                        sx={{ marginLeft: 'auto', fontSize: "27px", marginRight: "4px" }}
+                                        sx={{ marginLeft: 'auto', fontSize: "24px" }}
+                                    />
+                                </Tooltip>
+                                <Tooltip title="How to Use" arrow>
+                                    <InfoIcon
+                                        onClick={() => setShowInfo(true)}
+                                        sx={{ marginLeft: '18px', fontSize: "27px", marginRight: "6px" }}
                                     />
                                 </Tooltip>
 
@@ -689,6 +727,216 @@ function DrawerAppBar(props) {
                                                 sx={{ marginBottom: "20px", color: "black", backgroundColor: "white" }}
                                             >
                                                 Save
+                                            </Button>
+                                        </Box>
+                                    </Dialog>
+                                </Box>
+
+                                <Box>
+                                    <Dialog
+                                        open={showInfo}
+                                        onClose={() => handleUnderstand()}
+                                        fullWidth
+                                        TransitionComponent={Transition}
+                                        maxWidth="sm"
+                                        BackdropProps={{
+                                            sx: {
+                                                backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                            },
+                                        }}
+                                    >
+                                        <DialogContent sx={{paddingBottom:"0px"}}>
+                                            {/* Step-by-step instructions */}
+                                            <Box sx={{ marginBottom: 1 }}>
+    <Typography
+        variant="h6"
+        sx={{
+            textAlign: "center",
+            marginBottom: 1,
+            fontWeight: "bold",
+            color: "white",
+        }}
+    >
+        How to add an entry?
+    </Typography>
+    <Box
+        sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap:1,
+            padding: 2,
+            backgroundColor: "#2C2C2C",
+            borderRadius: 3,
+            // boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+        }}
+    >
+        {/* Step 1 */}
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+            }}
+        >
+            <Box
+                sx={{
+                    width: 70,
+                    height: 29,
+                    borderRadius: "15%",
+                    backgroundColor: "lightgrey",
+                    display: "flex",
+                    fontSize:"12px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    color: "black",
+                }}
+            >
+                Step 1
+            </Box>
+            <Typography
+                variant="body2"
+                sx={{
+                    color: "lightgrey",
+                }}
+            >
+                Type in the textbox or Tap mic to speak
+            </Typography>
+        </Box>
+
+        {/* Step 2 */}
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+            }}
+        >
+            <Box
+                sx={{
+                    width: 45,
+                    height: 28,
+                    borderRadius: "15%",
+                    backgroundColor: "lightgrey",
+                    display: "flex",
+                    fontSize:"12px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    color: "black",
+                }}
+            >
+               Step 2
+            </Box>
+            <Typography
+                variant="body2"
+                sx={{
+                    color: "lightgrey",
+                }}
+            >
+                Hit on CREATE
+            </Typography>
+        </Box>
+    </Box>
+</Box>
+
+                                           
+
+                                        </DialogContent>
+                                        <Box>
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{
+                                                        marginBottom: 0,
+                                                        fontWeight: "bold",
+                                                        color: "white",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    Sample Inputs:
+                                                </Typography>
+                                                {/* Scrollable Box Container */}
+                                                <Box
+                                                    sx={{
+                                                        maxHeight: "260px", // Limit height of the scrollable container
+                                                        overflowY: "auto", // Enable vertical scrolling
+                                                        padding: 1, // Padding to avoid content touching dialog borders
+                                                        backgroundColor: "#434343", // Background color for the container
+                                                        borderRadius: 2, // Rounded corners
+                                                        margin:"5px",
+                                                        // boxShadow: "0 4px 10px rgba(0,0,0,0.3)", // Add subtle shadow for better UI
+                                                    }}
+                                                >
+                                                    {sampleInputs.map((input, index) => (
+                                                        <Box
+                                                            key={index}
+                                                            sx={{
+                                                                display: "flex",
+                                                                justifyContent: "space-between",
+                                                                alignItems: "center",
+                                                                padding: 1.3, // Padding inside each card
+                                                                borderRadius: 2, // Rounded corners for cards
+                                                                backgroundColor: "#2c2c2c", // Card background color
+                                                                marginBottom: 1, // Spacing between cards
+                                                                "&:last-child": {
+                                                                    marginBottom: 0, // Remove margin for the last card
+                                                                },
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{
+                                                                    color: "lightgrey",
+                                                                    wordBreak: "break-word", // Prevent overflow of long text
+                                                                    flex:1, // Take up available space
+                                                                }}
+                                                            >
+                                                                {input}
+                                                            </Typography>
+                                                            <Button
+                                                                size="small"
+                                                                variant="outlined"
+                                                                // color=''
+                                                                onClick={() => handleTry(input)}
+                                                                sx={{
+                                                                    // color: "black",
+                                                                    // borderColor: "red",
+                                                                    // backgroundColor:'white',
+                                                                    textTransform: "none",
+                                                                    fontWeight: "bold",
+                                                                    padding: "2px 8px",
+                                                                    fontSize: "0.7rem",
+                                                                    marginLeft: 0.3, // Space between text and button
+                                                                }}
+                                                            >
+                                                                Try
+                                                            </Button>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </Box>
+
+
+                                        {/* Bottom button */}
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                width: '100%',
+                                                padding: 2,
+                                            }}
+                                        >
+                                            <Button
+                                                onClick={() => handleUnderstand()}
+                                                variant="contained"
+                                                // size='small'
+                                                sx={{
+                                                    //   color: 'black',
+                                                    //   backgroundColor: 'white',
+                                                    fontWeight: 'bold',
+                                                }}
+                                            >
+                                                Got it
                                             </Button>
                                         </Box>
                                     </Dialog>
