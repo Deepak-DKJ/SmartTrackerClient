@@ -541,7 +541,9 @@ function DrawerAppBar(props) {
     const [catType, setCatType] = React.useState(filters.cat);
 
     const container = window !== undefined ? () => window().document.body : undefined;
-
+    const handleTagClose = () => {
+        setDialogOpen(false)
+    }
 
     return (
         <>
@@ -732,9 +734,8 @@ function DrawerAppBar(props) {
 
 
                                 <Box>
-                                    <Dialog open={dialogOpen} onClose={() =>
-                                        setDialogOpen(false)
-                                    }
+                                    <Dialog open={dialogOpen} 
+                                        onClose={() =>handleTagClose()}
                                         TransitionComponent={Transition}
                                         fullWidth maxWidth="sm" BackdropProps={{
                                             sx: {
