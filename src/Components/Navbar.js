@@ -11,9 +11,17 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import MicOutlinedIcon from '@mui/icons-material/MicOutlined';
-import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
-import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
+
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import HomeIcon from '@mui/icons-material/Home';
+import LocalMallIcon from '@mui/icons-material/LocalMall';
+import MovieIcon from '@mui/icons-material/Movie';
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CategoryIcon from '@mui/icons-material/Category';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
@@ -31,9 +39,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import SavingsIcon from '@mui/icons-material/Savings';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -49,6 +58,7 @@ import {
     Chip,
     Fab,
 } from '@mui/material';
+import axios from 'axios';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
@@ -77,13 +87,27 @@ const hardcodedCategories = [
     "Food/Drinks",
     "Household",
     "Shopping",
-    "Entertainment",
     "Fuel/Travel",
     "Healthcare",
-    "Investment",
+    "Entertainment",
     "Salary",
+    "Savings",
     "Others"
 ];
+
+const categoryIcons = {
+    "Groceries": <ShoppingCartIcon />,          // Representing shopping for groceries
+    "Food/Drinks": <RestaurantMenuIcon />,    // Representing dining and beverages
+    "Household": <HomeIcon />,                  // Representing household items
+    "Shopping": <LocalMallIcon />,              // Representing general shopping
+    "Entertainment": <MovieIcon />,             // Representing movies and fun activities
+    "Fuel/Travel": <LocalGasStationIcon />,   // Representing fuel or travel expenses
+    "Healthcare": <MedicalServicesIcon />,      // Representing medical and healthcare
+    "Savings": <SavingsIcon />,       // Representing financial investments
+    "Salary": <AttachMoneyIcon />,              // Representing salary or earnings
+    "Others": <CategoryIcon />,                 // Generic icon for miscellaneous items
+};
+
 const sampleInputs = [
     "Flat rent paid 18.5k",
     "Laundry 370 rupees",
@@ -127,7 +151,7 @@ function DrawerAppBar(props) {
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg } = React.useContext(TrackerContext);
+    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
@@ -145,7 +169,7 @@ function DrawerAppBar(props) {
         const storedValue = localStorage.getItem('showInfo');
         return storedValue !== null ? JSON.parse(storedValue) : true;
     });
-    
+    const [savedList, setSavedList] = React.useState(catList);
     const [newCategory, setNewCategory] = React.useState("");
     const handleAddCategory = () => {
         if (newCategory.trim() && !catList.includes(newCategory.trim())) {
@@ -163,22 +187,44 @@ function DrawerAppBar(props) {
         localStorage.setItem('showInfo', false)
     }
     const handleTry = (input) => {
-       handleUnderstand(); // Close dialog after trying the input
+        handleUnderstand(); // Close dialog after trying the input
         setInputMsg(input);
     };
-    const handleSave = () => {
+    const handleSave = async () => {
+        let ls = []
         if (newCategory.trim() && !catList.includes(newCategory.trim())) {
             const updatedCatList = [...catList, newCategory.trim()]; // Create updated list
+            ls = updatedCatList
             setCatList(updatedCatList); // Update state
-            localStorage.setItem("catList", JSON.stringify(updatedCatList)); // Store updated list
+            // localStorage.setItem("catList", JSON.stringify(updatedCatList)); // Store updated list
         }
-        else localStorage.setItem("catList", JSON.stringify(catList));
+        else ls = catList;
+
         setNewCategory(""); // Reset input
         setDialogOpen(false); // Close dialog after saving
         setAlert({
             "vis": true,
             "msg": "Categories modified successfully !"
         })
+
+        try {
+            const data = {
+                "cats": ls
+            };
+            let authToken = localStorage.getItem("token");
+            // console.log(authToken);
+            const response = await axios.put(`${baseUrl}/items/updateCategory`, data, {
+                headers: {
+                    Token: authToken, // Set the Authorization header with Bearer token
+                    withCredentials: true,
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+            setSavedList(ls)
+
+        } catch (err) {
+            console.log("Error2: ", err.response);
+        }
     };
 
     const handleDelete = (categoryToDelete) => () => {
@@ -259,89 +305,113 @@ function DrawerAppBar(props) {
         XLSX.writeFile(workbook, `Detailed Summary - ${Label}.xlsx`);
     };
 
-
-
     const handleExportToPDF = () => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const currentDate = dayjs().format("DD MMM, YYYY");
-        const title = `Expenses & Earnings Summary - ${Label}`;
+        const title = `Smart Tracker Report - ${Label}`;
 
-        // Add Title
-        doc.setFontSize(16);
-        const textWidth = doc.getTextWidth(title);
-        doc.text(title, (pageWidth - textWidth) / 2, 10);
+        const logoPath = "/smarttracker3.png"; // Path to the logo
 
-        // Add Summary Table
-        const tableRows = [];
-        const startY = 20;
-        Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
-            tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
-        });
-        tableRows.push([]);
-        tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
+        const loadLogo = (callback) => {
+            const img = new Image();
+            img.src = logoPath;
+            img.onload = () => {
+                callback(img);
+            };
+        };
 
-        doc.autoTable({
-            head: [["Date", "Expenses", "Earnings"]],
-            body: tableRows,
-            startY,
-            styles: { fontSize: 14, halign: "center" },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-        });
+        loadLogo((img) => {
+            // Calculate dimensions for centered background
+            const logoWidth = pageWidth * 0.4; // Adjust width as 50% of page width
+            const logoHeight = (img.height / img.width) * logoWidth; // Maintain aspect ratio
+            const x = (pageWidth - logoWidth) / 2;
+            const y = (pageHeight - logoHeight) / 25.5; // Adjusted Y position for better placement
 
-        // Add Report Generated Date Caption
-        const caption = `Report generated on: ${currentDate}`;
-        doc.setFontSize(13);
-        doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, doc.internal.pageSize.getHeight() - 10);
+            // Add Transparent Logo Background
+            doc.setGState(new doc.GState({ opacity: 0.6 })); // Reduced opacity for better blending
+            doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "FAST");
+            doc.setGState(new doc.GState({ opacity: 1 })); // Reset transparency
 
-        // Start Detailed Summary on New Page
-        doc.addPage();
-        doc.setFontSize(15);
-        const detailedSummaryTitle = "Detailed Summary";
-        const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
-        doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
+            // Add Title on First Page
+            doc.setFontSize(16);
+            const textWidth = doc.getTextWidth(title);
+            const titleY = y + logoHeight + 16; // Start title just below the logo
+            doc.text(title, (pageWidth - textWidth) / 2, titleY);
 
-        // Iterate Through Items By Date
-        let detailedStartY = 20;
-        Object.entries(chartItems).forEach(([date]) => {
-            const records = items[date]
-            doc.setFontSize(14);
-            doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
-            detailedStartY += 10;
+            // Add Summary Table
+            const tableRows = [];
+            const startY = titleY + 10; // Adjusted startY to avoid overlap with title
+            Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+                tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
+            });
+            tableRows.push([]);
+            tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
 
-            // Prepare Table Rows for Each Date
-            const detailedRows = records.map((record) => [
-                record.itemName,
-                `Rs. ${record.totalPrice}`,
-                record.quantity,
-                record.category,
-                record.type,
-                record.desc === "" ? "NA" : record.desc,
-            ]);
-
-            // Add Table for Current Date
             doc.autoTable({
-                head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
-                body: detailedRows,
-                startY: detailedStartY,
-                styles: { fontSize: 12, halign: "center" },
+                head: [["Date", "Expenses", "Earnings"]],
+                body: tableRows,
+                startY,
+                styles: { fontSize: 14, halign: "center" },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-                margin: { top: 10 },
             });
 
-            // Update Y Position for Next Date
-            detailedStartY = doc.lastAutoTable.finalY + 10;
+            // Add Report Generated Date Caption
+            const caption = `Report generated on: ${currentDate}`;
+            doc.setFontSize(13);
+            doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, pageHeight - 10);
 
-            // Add Page If Space is Insufficient
-            if (detailedStartY + 20 > doc.internal.pageSize.getHeight()) {
-                doc.addPage();
-                detailedStartY = 20;
-            }
+            // Add Detailed Summary on New Page
+            doc.addPage();
+            doc.setFontSize(15);
+            const detailedSummaryTitle = "Detailed Summary";
+            const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
+            doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
+
+            // Iterate Through Items By Date
+            let detailedStartY = 20;
+            Object.entries(chartItems).forEach(([date]) => {
+                const records = items[date];
+                doc.setFontSize(14);
+                doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
+                detailedStartY += 10;
+
+                // Prepare Table Rows for Each Date
+                const detailedRows = records.map((record) => [
+                    record.itemName,
+                    `Rs. ${record.totalPrice}`,
+                    record.quantity,
+                    record.category,
+                    record.type,
+                    record.desc === "" ? "NA" : record.desc,
+                ]);
+
+                // Add Table for Current Date
+                doc.autoTable({
+                    head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
+                    body: detailedRows,
+                    startY: detailedStartY,
+                    styles: { fontSize: 12, halign: "center" },
+                    headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
+                    margin: { top: 10 },
+                });
+
+                // Update Y Position for Next Date
+                detailedStartY = doc.lastAutoTable.finalY + 10;
+
+                // Add Page If Space is Insufficient
+                if (detailedStartY + 20 > pageHeight) {
+                    doc.addPage();
+                    detailedStartY = 20;
+                }
+            });
+
+            // Save PDF
+            doc.save(`Summary - ${Label}.pdf`);
         });
-
-        // Save PDF
-        doc.save(`Summary - ${Label}.pdf`);
     };
+
 
 
     const getStringDate = (date) => {
@@ -462,7 +532,10 @@ function DrawerAppBar(props) {
             </List>
         </Box>
     );
-
+    React.useEffect(() => {
+        if (savedList.length === 0)
+            setSavedList(catList)
+    }, [catList])
     const [daysNumber, setDaysNumber] = React.useState(filters.lastxdays);
     const [filterType, setFilterType] = React.useState(filters.type);
     const [catType, setCatType] = React.useState(filters.cat);
@@ -574,7 +647,7 @@ function DrawerAppBar(props) {
                                             }}
                                             color="primary"
                                             variant="contained"
-                                            sx={{ marginBottom: "20px", fontWeight:"bold" }}
+                                            sx={{ marginBottom: "20px", fontWeight: "bold" }}
                                         >
                                             Apply Filters
                                         </Button>
@@ -618,7 +691,8 @@ function DrawerAppBar(props) {
                                 <Tooltip title="Configure Tags" arrow>
                                     <LocalOfferIcon
                                         onClick={() => {
-                                            setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
+                                            setCatList(savedList)
+                                            // setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
                                             setDialogOpen(true)
                                         }}
                                         sx={{ marginLeft: 'auto', fontSize: "24px" }}
@@ -675,14 +749,18 @@ function DrawerAppBar(props) {
                                                     justifyContent: 'center',
                                                     flexWrap: 'wrap',
                                                     listStyle: 'none',
-                                                    p: 0.5,
+                                                    p: 0,
+                                                    paddingTop: "8px",
+                                                    paddingBottom: "8px",
                                                     m: 0,
                                                 }}
                                                 component="ul"
                                             >
-                                                {catList.map((category, index) => (
+                                                {catList !== undefined && catList.map((category, index) => (
                                                     <ListItem key={index}>
                                                         <Chip
+                                                            variant="contained"
+                                                            icon={categoryIcons[category]}
                                                             label={category}
                                                             onDelete={!hardcodedCategories.includes(category) ? handleDelete(category) : undefined}
                                                             color={hardcodedCategories.includes(category) ? "default" : "primary"} // Optional to differentiate
@@ -745,176 +823,139 @@ function DrawerAppBar(props) {
                                             },
                                         }}
                                     >
-                                        <DialogContent sx={{paddingBottom:"0px"}}>
+                                        <DialogContent sx={{ paddingBottom: "0px" }}>
                                             {/* Step-by-step instructions */}
-                                            <Box sx={{ marginBottom: 1 }}>
-    <Typography
-        variant="h6"
-        sx={{
-            textAlign: "center",
-            marginBottom: 1,
-            fontWeight: "bold",
-            color: "white",
-        }}
-    >
-        How to add an entry?
-    </Typography>
-    <Box
-        sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap:1,
-            padding: 2,
-            backgroundColor: "#2C2C2C",
-            borderRadius: 3,
-            // boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-        }}
-    >
-        {/* Step 1 */}
-        <Box
-            sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-            }}
-        >
-            <Box
-                sx={{
-                    width: 70,
-                    height: 29,
-                    borderRadius: "15%",
-                    backgroundColor: "lightgrey",
-                    display: "flex",
-                    fontSize:"12px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    fontWeight: "bold",
-                    color: "black",
-                }}
-            >
-                Step 1
-            </Box>
-            <Typography
-                variant="body2"
-                sx={{
-                    color: "lightgrey",
-                }}
-            >
-                Type in the textbox or Tap mic to speak
-            </Typography>
-        </Box>
-
-        {/* Step 2 */}
-        <Box
-            sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-            }}
-        >
-            <Box
-                sx={{
-                    width: 45,
-                    height: 28,
-                    borderRadius: "15%",
-                    backgroundColor: "lightgrey",
-                    display: "flex",
-                    fontSize:"12px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    fontWeight: "bold",
-                    color: "black",
-                }}
-            >
-               Step 2
-            </Box>
-            <Typography
-                variant="body2"
-                sx={{
-                    color: "lightgrey",
-                }}
-            >
-                Hit on CREATE
-            </Typography>
-        </Box>
-    </Box>
-</Box>
-
-                                           
-
-                                        </DialogContent>
-                                        <Box>
+                                            <Box sx={{ marginBottom: 2 }}>
                                                 <Typography
                                                     variant="h6"
                                                     sx={{
-                                                        marginBottom: 0,
+                                                        textAlign: "center",
+                                                        marginBottom: 1,
                                                         fontWeight: "bold",
                                                         color: "white",
-                                                        textAlign: "center",
                                                     }}
                                                 >
-                                                    Sample Inputs:
+                                                    How to add an entry?
                                                 </Typography>
-                                                {/* Scrollable Box Container */}
-                                                <Box
-                                                    sx={{
-                                                        maxHeight: "260px", // Limit height of the scrollable container
-                                                        overflowY: "auto", // Enable vertical scrolling
-                                                        padding: 1, // Padding to avoid content touching dialog borders
-                                                        backgroundColor: "#434343", // Background color for the container
-                                                        borderRadius: 2, // Rounded corners
-                                                        margin:"5px",
-                                                        // boxShadow: "0 4px 10px rgba(0,0,0,0.3)", // Add subtle shadow for better UI
-                                                    }}
-                                                >
-                                                    {sampleInputs.map((input, index) => (
-                                                        <Box
-                                                            key={index}
+                                                <TableContainer>
+                                                    <Table>
+                                                        <TableBody>
+                                                            {/* Step 1 */}
+                                                            <TableRow>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        width: "75px", // Consistent width for the step column
+                                                                    }}
+                                                                >
+                                                                    Step 1
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        color: "lightgrey",
+                                                                        padding: "0px"
+                                                                    }}
+                                                                >
+                                                                    Type in the textbox or Tap mic to speak
+                                                                </TableCell>
+                                                            </TableRow>
+
+                                                            {/* Step 2 */}
+                                                            <TableRow>
+                                                                <TableCell
+
+                                                                >
+                                                                    Step 2
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        color: "lightgrey",
+                                                                        padding: "0px"
+                                                                    }}
+                                                                >
+                                                                    Hit on CREATE
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </TableBody>
+                                                    </Table>
+                                                </TableContainer>
+
+                                            </Box>
+
+
+
+                                        </DialogContent>
+                                        <Box>
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    marginBottom: 1,
+                                                    fontWeight: "bold",
+                                                    color: "white",
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                Sample Inputs:
+                                            </Typography>
+                                            {/* Scrollable Box Container */}
+                                            <Box
+                                                sx={{
+                                                    maxHeight: "260px", // Limit height of the scrollable container
+                                                    overflowY: "auto", // Enable vertical scrolling
+                                                    padding: 1, // Padding to avoid content touching dialog borders
+                                                    backgroundColor: "#434343", // Background color for the container
+                                                    borderRadius: 2, // Rounded corners
+                                                    margin: "5px",
+                                                    // boxShadow: "0 4px 10px rgba(0,0,0,0.3)", // Add subtle shadow for better UI
+                                                }}
+                                            >
+                                                {sampleInputs.map((input, index) => (
+                                                    <Box
+                                                        key={index}
+                                                        sx={{
+                                                            display: "flex",
+                                                            justifyContent: "space-between",
+                                                            alignItems: "center",
+                                                            padding: 1.3, // Padding inside each card
+                                                            borderRadius: 2, // Rounded corners for cards
+                                                            backgroundColor: "#2c2c2c", // Card background color
+                                                            marginBottom: 1, // Spacing between cards
+                                                            "&:last-child": {
+                                                                marginBottom: 0, // Remove margin for the last card
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="body2"
                                                             sx={{
-                                                                display: "flex",
-                                                                justifyContent: "space-between",
-                                                                alignItems: "center",
-                                                                padding: 1.3, // Padding inside each card
-                                                                borderRadius: 2, // Rounded corners for cards
-                                                                backgroundColor: "#2c2c2c", // Card background color
-                                                                marginBottom: 1, // Spacing between cards
-                                                                "&:last-child": {
-                                                                    marginBottom: 0, // Remove margin for the last card
-                                                                },
+                                                                color: "lightgrey",
+                                                                wordBreak: "break-word", // Prevent overflow of long text
+                                                                flex: 1, // Take up available space
                                                             }}
                                                         >
-                                                            <Typography
-                                                                variant="body2"
-                                                                sx={{
-                                                                    color: "lightgrey",
-                                                                    wordBreak: "break-word", // Prevent overflow of long text
-                                                                    flex:1, // Take up available space
-                                                                }}
-                                                            >
-                                                                {input}
-                                                            </Typography>
-                                                            <Button
-                                                                size="small"
-                                                                variant="outlined"
-                                                                // color=''
-                                                                onClick={() => handleTry(input)}
-                                                                sx={{
-                                                                    // color: "black",
-                                                                    // borderColor: "red",
-                                                                    // backgroundColor:'white',
-                                                                    textTransform: "none",
-                                                                    fontWeight: "bold",
-                                                                    padding: "2px 8px",
-                                                                    fontSize: "0.7rem",
-                                                                    marginLeft: 0.3, // Space between text and button
-                                                                }}
-                                                            >
-                                                                Try
-                                                            </Button>
-                                                        </Box>
-                                                    ))}
-                                                </Box>
+                                                            {input}
+                                                        </Typography>
+                                                        <Button
+                                                            size="small"
+                                                            variant="contained"
+                                                            // color=''
+                                                            onClick={() => handleTry(input)}
+                                                            sx={{
+                                                                // color: "black",
+                                                                // borderColor: "red",
+                                                                // backgroundColor:'white',
+                                                                textTransform: "none",
+                                                                fontWeight: "bold",
+                                                                padding: "2px 8px",
+                                                                fontSize: "0.7rem",
+                                                                marginLeft: 0.3, // Space between text and button
+                                                            }}
+                                                        >
+                                                            Try
+                                                        </Button>
+                                                    </Box>
+                                                ))}
                                             </Box>
+                                        </Box>
 
 
                                         {/* Bottom button */}
@@ -931,8 +972,8 @@ function DrawerAppBar(props) {
                                                 variant="contained"
                                                 // size='small'
                                                 sx={{
-                                                    //   color: 'black',
-                                                    //   backgroundColor: 'white',
+                                                    color: 'black',
+                                                    backgroundColor: 'white',
                                                     fontWeight: 'bold',
                                                 }}
                                             >

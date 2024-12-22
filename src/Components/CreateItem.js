@@ -25,7 +25,7 @@ const getStringDate = (date) => {
 }
 
 function CreateItem() {
-  const { baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg } = useContext(TrackerContext)
+  const { baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg, catList, setCatList } = useContext(TrackerContext)
   const [aiMsg, setAiMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -81,9 +81,12 @@ function CreateItem() {
           },
         });
         // console.log(response.data)
-        const dat = response.data
+        const dat = response.data?.entries
+        const cats = response.data?.cats
+        // console.log(cats)
         // console.log(dat)
         setItems(dat)
+        setCatList(cats)
       }
       catch (err) {
         console.log(err)
@@ -111,9 +114,13 @@ function CreateItem() {
 
     try {
       setIsLoading(true);
+      let cls = "";
+      for(const ind in catList)
+        cls += catList[ind] + ", ";
       const data = {
         inp: inputMsg,
         date: selectedDate,
+        catls: cls
       };
       let authToken = localStorage.getItem("token");
       // console.log(authToken);

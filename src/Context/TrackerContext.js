@@ -2,18 +2,6 @@ import { children, createContext, useState } from "react";
 const TrackerContext = createContext()
 
 const TrackerProvider = ({ children }) => {
-  const hardcodedCategories = [
-    "Groceries",
-    "Food/Drinks",
-    "Household",
-    "Shopping",
-    "Entertainment",
-    "Fuel/Travel",
-    "Healthcare",
-    "Investment",
-    "Salary",
-    "Others"
-  ];
   const [items, setItems] = useState(null);
   const [inputMsg, setInputMsg] = useState('');
   const [filteredItems, setFilteredItems] = useState(null);
@@ -26,9 +14,7 @@ const TrackerProvider = ({ children }) => {
       : { lastxdays: 7, type: "All", cat: "Any" };
   });
 
-  const [catList, setCatList] = useState(
-    JSON.parse(localStorage.getItem("catList")) || hardcodedCategories
-  );
+  const [catList, setCatList] = useState([]);
   const [Label, setLabel] = useState("")
   const [summaryItems, setSummaryItems] = useState(null);
   const [chartItems, setChartItems] = useState(null);
