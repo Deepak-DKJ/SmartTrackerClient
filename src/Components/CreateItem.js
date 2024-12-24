@@ -25,7 +25,7 @@ const getStringDate = (date) => {
 }
 
 function CreateItem() {
-  const { baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg, catList, setCatList } = useContext(TrackerContext)
+  const { fetch_data, setValueNav, baseUrl, setUserData, items, setFilteredItems, setItems, inputMsg, setInputMsg, catList, setCatList } = useContext(TrackerContext)
   const [aiMsg, setAiMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -67,34 +67,37 @@ function CreateItem() {
   };
 
   useEffect(() => {
-    const fetch_data = async () => {
-      // console.log(items)
-      if (items !== null && Object.keys(items).length > 0)
-        return;
-      // setShowProgress(true)
-      try {
-        let authToken = localStorage.getItem('token')
-        // console.log(authToken)
-        const response = await axios.get(`${baseUrl}/items/getallitems`, {
-          headers: {
-            Token: authToken, // Set the Authorization header with Bearer token
-          },
-        });
-        // console.log(response.data)
-        const dat = response.data?.entries
-        const cats = response.data?.cats
-        // console.log(cats)
-        // console.log(dat)
-        setItems(dat)
-        setCatList(cats)
-      }
-      catch (err) {
-        console.log(err)
-        // setShowProgress(false)
-      }
-    }
+    // const fetch_data = async () => {
+    //   // console.log(items)
+    //   if (items !== null && Object.keys(items).length > 0)
+    //     return;
+    //   // setShowProgress(true)
+    //   try {
+    //     let authToken = localStorage.getItem('token')
+    //     // console.log(authToken)
+    //     const response = await axios.get(`${baseUrl}/items/getallitems`, {
+    //       headers: {
+    //         Token: authToken, // Set the Authorization header with Bearer token
+    //       },
+    //     });
+    //     // console.log(response.data)
+    //     const dat = response.data?.entries
+    //     const cats = response.data?.cats
+    //     // console.log(cats)
+    //     // console.log(dat)
+    //     setItems(dat)
+    //     setCatList(cats)
+    //   }
+    //   catch (err) {
+    //     console.log(err)
+    //     // setShowProgress(false)
+    //   }
+    // }
     fetch_data();
   }, [items])
+  // useEffect(() => {
+  //   setValueNav(0);
+  // }, [])
 
   const [isLoading, setIsLoading] = useState(false)
 

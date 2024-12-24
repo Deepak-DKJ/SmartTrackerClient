@@ -11,6 +11,8 @@ import utc from 'dayjs/plugin/utc';
 import { styled, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
+
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -88,9 +90,23 @@ const getStringDate = (date) => {
 }
 
 const Dashboard = () => {
-  const { catList, setCatList, searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
+  const { fetch_data, catList, setCatList, searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
+
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  // Handle scroll event
+  const handleScroll = (event) => {
+    const scrollTop = event.target.scrollTop;
+    setShowScrollToTop(scrollTop > 100); // Show button if scrolled down more than 100px
+  };
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    const box = document.getElementById('scrollable-box');
+    box.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getLastxDaysData = (days) => {
     setShowProgress(true);
@@ -169,6 +185,10 @@ const Dashboard = () => {
   }, [searchString2])
 
   useEffect(() => {
+    fetch_data();
+  }, [])
+
+  useEffect(() => {
     if (items === null)
       return;
     // console.log(filters.lastxdays)
@@ -215,8 +235,7 @@ const Dashboard = () => {
     // Find the index of the item to update
     const itemIndex = entriesForOriginalDate.findIndex(entry => entry.itemId === selectedItemId);
     // console.log(billImage)
-    if(billImage === undefined)
-    {
+    if (billImage === undefined) {
       billImage = entriesForOriginalDate[itemIndex]?.billImage
     }
     // console.log(billImage)
@@ -560,14 +579,14 @@ const Dashboard = () => {
                               {(originalSelectedItemDate)} : {selectedItemName}
                             </Typography>
                             <Tooltip title="Download bill" arrow>
-                                    <IconButton
-                                    sx={{mr: 2}}
-                                      component="a"
-                                      href={`${baseUrl}/items/download/${driveFileId}@${driveFileName}`}
-                                    >
-                                      <FileDownloadIcon />
-                                    </IconButton>
-                                  </Tooltip>
+                              <IconButton
+                                sx={{ mr: 2 }}
+                                component="a"
+                                href={`${baseUrl}/items/download/${driveFileId}@${driveFileName}`}
+                              >
+                                <FileDownloadIcon />
+                              </IconButton>
+                            </Tooltip>
                             <Tooltip title="Exit fullscreen" arrow>
                               <IconButton edge="start" color="inherit" onClick={closeFullBillDialog} aria-label="close">
                                 <FullscreenExitIcon />
@@ -885,14 +904,14 @@ const Dashboard = () => {
                             value={selectedItemCat}
                             disabled={!edit || loading}
                             onChange={(e) => setSelectedItemCat(e.target.value)}
-                            style={{ marginTop: "15px", marginBottom:"0px" }}
+                            style={{ marginTop: "15px", marginBottom: "0px" }}
 
-                        >
+                          >
                             <MenuItem value="Any">Any</MenuItem>
                             {catList.map((catgry) => (
-                                <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                              <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
                             ))}
-                        </TextField>
+                          </TextField>
                         </Box>
                       </DialogContent>
                     </>
@@ -930,7 +949,7 @@ const Dashboard = () => {
                   </Box>
                 </Dialog>
 
-                <Box sx={{ height: '85vh', paddingBottom: '10px', overflowY: 'auto' }}>
+                <Box id="scrollable-box" onScroll={handleScroll} sx={{ height: '85vh', paddingBottom: '10px', overflowY: 'auto' }}>
                   {filteredItems && Object.keys(filteredItems).length > 0 && Object.keys(filteredItems).map(date => (
                     <Accordion key={date}
                       // defaultExpanded={date === getStringDate(new Date)}
@@ -1015,6 +1034,23 @@ const Dashboard = () => {
                     </Accordion>
                   ))}
                 </Box>
+
+                {showScrollToTop && (
+                  <Box
+                    sx={{
+                      position: 'fixed',
+                      bottom: "10vh",
+                      right: 22,
+                      cursor: 'pointer',
+                      bgcolor: 'black',
+                      borderRadius: '50%',
+                      zIndex: 1000,
+                    }}
+                    onClick={scrollToTop}
+                  >
+                    <ArrowCircleUpIcon sx={{ color: 'white', fontSize: '42px' }} />
+                  </Box>
+                )}
               </div>
             </>
           )}

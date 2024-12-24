@@ -88,12 +88,12 @@ const { setSearchString, setSearchString2, valueNav, setValueNav } = React.useCo
         <Summary />
         </>
       )}
-
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} >
         <BottomNavigation
           showLabels
           value={valueNav}
           onChange={(event, newValue) => {
+            localStorage.setItem('navTab', newValue)
             setValueNav(newValue);
           }}
         >

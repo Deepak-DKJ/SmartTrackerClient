@@ -56,10 +56,10 @@ TabPanel.propTypes = {
 
 const Summary = () => {
 
-  const { Label, setLabel, searchString2, setSearchString2, summaryItems, searchedItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems, setSearchString, valueNav, setValueNav } = useContext(TrackerContext);
-
-
-
+  const { fetch_data, Label, setLabel, searchString2, setSearchString2, summaryItems, searchedItems, setSummaryItems, searchString, filters, baseUrl, items, setItems, filteredItems, chartItems, setChartItems, setSearchString, valueNav, setValueNav } = useContext(TrackerContext);
+  useEffect(() => {
+    fetch_data();
+  }, [])
   const getStringDate = (date) => {
     // const date = new Date();
     const dd = String(date.getDate()).padStart(2, '0');
