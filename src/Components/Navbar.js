@@ -207,7 +207,7 @@ function DrawerAppBar(props) {
             "msg": "Categories modified successfully !"
         })
 
-        if(ls.length === 0)
+        if (ls.length === 0)
             return;
 
         try {
@@ -314,9 +314,9 @@ function DrawerAppBar(props) {
         const pageHeight = doc.internal.pageSize.getHeight();
         const currentDate = dayjs().format("DD MMM, YYYY");
         const title = `Smart Tracker Report - ${Label}`;
-    
+
         const logoPath = "/smarttracker3.png"; // Path to the logo
-    
+
         const loadLogo = (callback) => {
             const img = new Image();
             img.src = logoPath;
@@ -324,14 +324,14 @@ function DrawerAppBar(props) {
                 callback(img);
             };
         };
-    
+
         loadLogo((img) => {
             // Add Title at the Top
             doc.setFontSize(16);
             const textWidth = doc.getTextWidth(title);
             const titleY = 20; // Fixed position at the top
             doc.text(title, (pageWidth - textWidth) / 2, titleY);
-    
+
             // Add Summary Table
             const tableRows = [];
             const startY = titleY + 10; // Start further below the title
@@ -340,7 +340,7 @@ function DrawerAppBar(props) {
             });
             tableRows.push([]);
             tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
-    
+
             doc.autoTable({
                 head: [["Date", "Expenses", "Earnings"]],
                 body: tableRows,
@@ -348,35 +348,35 @@ function DrawerAppBar(props) {
                 styles: { fontSize: 14, halign: "center" },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
             });
-    
+
             // Add Report Generated Date Caption
             const caption = `Report generated on: ${currentDate}`;
             doc.setFontSize(13);
             doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, pageHeight - 10);
-    
+
             // Add Watermark as Background
             const logoWidth = pageWidth * 0.6; // Adjust logo size (50% of page width)
             const logoHeight = (img.height / img.width) * logoWidth; // Maintain aspect ratio
             const x = (pageWidth - logoWidth) / 2; // Center horizontally
             const y = (pageHeight - logoHeight) / 2; // Center vertically
-    
+
             doc.setGState(new doc.GState({ opacity: 0.18 })); // Light opacity
             doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW"); // Set blend mode
             doc.setGState(new doc.GState({ opacity: 1 })); // Reset opacity
-    
+
             // Add Detailed Summary on New Page
             doc.addPage();
-    
+
             // Re-add watermark for the new page
             // doc.setGState(new doc.GState({ opacity: 0.08 }));
             // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
             // doc.setGState(new doc.GState({ opacity: 1 }));
-    
+
             doc.setFontSize(15);
             const detailedSummaryTitle = "Detailed Summary";
             const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
             doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
-    
+
             // Iterate Through Items By Date
             let detailedStartY = 30; // Start content slightly lower
             Object.entries(chartItems).forEach(([date]) => {
@@ -384,7 +384,7 @@ function DrawerAppBar(props) {
                 doc.setFontSize(14);
                 doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
                 detailedStartY += 10;
-    
+
                 // Prepare Table Rows for Each Date
                 const detailedRows = records.map((record) => [
                     record.itemName,
@@ -394,7 +394,7 @@ function DrawerAppBar(props) {
                     record.type,
                     record.desc === "" ? "NA" : record.desc,
                 ]);
-    
+
                 // Add Table for Current Date
                 doc.autoTable({
                     head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
@@ -407,28 +407,28 @@ function DrawerAppBar(props) {
                 // doc.setGState(new doc.GState({ opacity: 0.08 }));
                 // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
                 // doc.setGState(new doc.GState({ opacity: 1 }));
-    
+
                 // Update Y Position for Next Date
                 detailedStartY = doc.lastAutoTable.finalY + 10;
-    
+
                 // Add Page If Space is Insufficient
                 if (detailedStartY + 20 > pageHeight) {
                     doc.addPage();
-    
+
                     // Re-add watermark for new page
                     // doc.setGState(new doc.GState({ opacity: 0.08 }));
                     // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
                     // doc.setGState(new doc.GState({ opacity: 1 }));
-    
+
                     detailedStartY = 30; // Start new content lower
                 }
             });
-    
+
             // Save PDF
             doc.save(`Summary - ${Label}.pdf`);
         });
     };
-    
+
 
 
 
@@ -587,7 +587,13 @@ function DrawerAppBar(props) {
 
                                 <Dialog
                                     open={openFilterModal}
-                                    onClose={handleCloseFilterModal}
+                                    onClose={(event, reason) => {
+                                        if (reason === "backdropClick") {
+                                            // Do nothing to prevent dialog close
+                                            return;
+                                        }
+                                        handleCloseFilterModal(); // Handle explicit close actions
+                                    }}
                                     maxWidth="xs"
                                     keepMounted
                                     TransitionComponent={Transition}
@@ -651,6 +657,16 @@ function DrawerAppBar(props) {
                                     >
                                         <Button
                                             onClick={() => {
+                                                handleCloseFilterModal();
+                                            }}
+                                            size='small'
+                                            variant="contained"
+                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                        >
+                                            close
+                                        </Button>
+                                        <Button
+                                            onClick={() => {
                                                 setFilters({
                                                     lastxdays: daysNumber,
                                                     type: filterType,
@@ -668,7 +684,7 @@ function DrawerAppBar(props) {
                                             }}
                                             color="primary"
                                             variant="contained"
-                                            sx={{ marginBottom: "20px", fontWeight: "bold" }}
+                                            sx={{ marginBottom: "20px"}}
                                         >
                                             Apply Filters
                                         </Button>
@@ -753,8 +769,14 @@ function DrawerAppBar(props) {
 
 
                                 <Box>
-                                    <Dialog open={dialogOpen} 
-                                        onClose={handleTagClose}
+                                    <Dialog open={dialogOpen}
+                                        onClose={(event, reason) => {
+                                            if (reason === "backdropClick") {
+                                                // Do nothing to prevent dialog close
+                                                return;
+                                            }
+                                            handleTagClose(); // Handle explicit close actions
+                                        }}
                                         TransitionComponent={Transition}
                                         fullWidth maxWidth="sm" BackdropProps={{
                                             sx: {
@@ -819,6 +841,16 @@ function DrawerAppBar(props) {
                                         <Box
                                             sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                                         >
+                                             <Button
+                                            onClick={() => {
+                                                handleTagClose();
+                                            }}
+                                            size='small'
+                                            variant="contained"
+                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                        >
+                                            close
+                                        </Button>
                                             <Button
                                                 onClick={handleSave}
                                                 variant="contained"
@@ -833,10 +865,16 @@ function DrawerAppBar(props) {
                                 <Box>
                                     <Dialog
                                         open={showInfo}
-                                        onClose={() => handleUnderstand()}
                                         fullWidth
                                         TransitionComponent={Transition}
                                         maxWidth="sm"
+                                        onClose={(event, reason) => {
+                                            if (reason === "backdropClick") {
+                                                // Do nothing to prevent dialog close
+                                                return;
+                                            }
+                                            handleUnderstand(); // Handle explicit close actions
+                                        }}
                                         BackdropProps={{
                                             sx: {
                                                 backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background

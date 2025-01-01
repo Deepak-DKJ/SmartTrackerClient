@@ -21,10 +21,16 @@ const TrackerProvider = ({ children }) => {
   const [chartItems, setChartItems] = useState(null);
   const [searchString, setSearchString] = useState("")
   const [searchString2, setSearchString2] = useState("")
+  // console.log(localStorage.getItem('navTab'))
+  const savedValue = Number(localStorage.getItem('navTab'));
   const [valueNav, setValueNav] = useState(() => {
+    if(localStorage.getItem('navTab') === null)
+      return 1;
     const savedValue = Number(localStorage.getItem('navTab'));
     return savedValue >= 0 && savedValue <= 2 ? savedValue : 1; // Ensure within valid range
   })
+  // console.log(savedValue)
+  // console.log(valueNav)
   const [baseUrl, setBaseUrl] = useState('https://smart-tracker-server.vercel.app/api')
   // const [baseUrl, setBaseUrl] = useState("http://localhost:8000/api")
   const fetch_data = async () => {

@@ -517,7 +517,14 @@ const Dashboard = () => {
 
                 <Dialog
                   open={open}
-                  onClose={() => setOpen(false)}
+                  // onClose={() => setOpen(false)}
+                  onClose={(event, reason) => {
+                    if (reason === "backdropClick") {
+                        // Do nothing to prevent dialog close
+                        return;
+                    }
+                    setOpen(false) // Handle explicit close actions
+                }}
                   aria-labelledby="confirm-dialog-title"
                   aria-describedby="confirm-dialog-description"
 
@@ -546,7 +553,15 @@ const Dashboard = () => {
 
                 <Dialog
                   open={openFilterModal}
-                  onClose={loading ? null : handleCloseFilterModal}
+                  onClose={(event, reason) => {
+                    if (reason === "backdropClick") {
+                        // Do nothing to prevent dialog close
+                        return;
+                    }
+                    if(loading === true)
+                      return
+                    handleCloseFilterModal();
+                }}
                   maxWidth="xs"
                   keepMounted
                   TransitionComponent={Slide}
@@ -1006,7 +1021,7 @@ const Dashboard = () => {
                                           alignItems="center"
                                           justifyContent="center"
                                           sx={{
-                                            bgcolor: item.type === 'Expense' ? 'cyan' : '#38FF59',
+                                            bgcolor: item.type === 'Expense' ? 'cyan' : '#00FF00',
                                             color: item.type === 'Expense' ? 'black' : 'black',
                                             borderRadius: 2,
                                             fontWeight: "bold",

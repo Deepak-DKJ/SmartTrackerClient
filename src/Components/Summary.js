@@ -392,7 +392,8 @@ const Summary = () => {
                                   {
                                     label: 'Earnings',
                                     data: earnings,
-                                    borderColor: 'orange',
+                                    borderColor: '#00FF00',
+                                    hidden: summaryItems.Earning === 0
                                     // backgroundColor: 'rgba(251, 192, 147, 0.4)',
                                   },
                                   {
@@ -410,17 +411,20 @@ const Summary = () => {
                                     title: {
                                       display: true,
                                       text: `${Label}`,
+                                      color:'white'
                                     },
                                     grid: {
                                       display: true, // Enable x-axis grid lines
                                       color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
                                     },
+                                    ticks: { color: "#B0B0B0" },
                                   },
                                   y: {
                                     grid: {
                                       display: true, // Enable y-axis grid lines
                                       color: 'rgba(200, 200, 200, 0.2)', // Customize grid color
                                     },
+                                    ticks: { color: "#B0B0B0" },
                                   },
                                 },
                                 elements: {
@@ -431,15 +435,14 @@ const Summary = () => {
                                 plugins: {
                                   legend: {
                                     labels: {
-                                      font: { weight: "bold", size: 13 },
+                                      font: { weight: "bold", size: 13},
+                                      color:'#B0B0B0'
                                     },
                                   },
                                 },
                               }}
                             />
                           )}
-
-
 
                           {showChart === 1 && (
                             <div style={{ width: '100%', maxWidth: 400, height: '48.5vh', margin: 'auto' }}>
@@ -486,6 +489,9 @@ const Summary = () => {
                                     legend: {
                                       display: true,
                                       position: "bottom",
+                                      labels: {
+                                        color: "#B0B0B0",
+                                    },
                                     },
                                   },
                                 }}
