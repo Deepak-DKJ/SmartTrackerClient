@@ -1021,7 +1021,7 @@ const Dashboard = () => {
                                           alignItems="center"
                                           justifyContent="center"
                                           sx={{
-                                            bgcolor: item.type === 'Expense' ? 'cyan' : '#00FF00',
+                                            bgcolor: item.type === 'Expense' ? 'cyan' : '#00BF00',
                                             color: item.type === 'Expense' ? 'black' : 'black',
                                             borderRadius: 2,
                                             fontWeight: "bold",

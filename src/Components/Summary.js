@@ -392,7 +392,7 @@ const Summary = () => {
                                   {
                                     label: 'Earnings',
                                     data: earnings,
-                                    borderColor: '#00FF00',
+                                    borderColor: '#00BF00',
                                     hidden: summaryItems.Earning === 0
                                     // backgroundColor: 'rgba(251, 192, 147, 0.4)',
                                   },
