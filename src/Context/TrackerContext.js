@@ -15,6 +15,22 @@ const TrackerProvider = ({ children }) => {
       : { lastxdays: 7, type: "All", cat: "Any" };
   });
 
+  const [filtersExport, setFiltersExport] = useState(() => {
+    const storedFilters = JSON.parse(localStorage.getItem('filterExport'));
+    return storedFilters
+      ? { showExpenses: storedFilters.showExpenses, 
+        showEarnings: storedFilters.showEarnings, 
+        detailedReport: storedFilters.detailedReport,
+        tags: storedFilters.tags 
+      }
+      : { 
+        showExpenses: true, 
+        showEarnings: true, 
+        detailedReport: true,
+        tags: []
+       };
+  });
+
   const [catList, setCatList] = useState([]);
   const [Label, setLabel] = useState("")
   const [summaryItems, setSummaryItems] = useState(null);
@@ -60,7 +76,7 @@ const TrackerProvider = ({ children }) => {
     }
   }
   return (
-    <TrackerContext.Provider value={{ fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl }}>
+    <TrackerContext.Provider value={{ fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport }}>
       {children}
     </TrackerContext.Provider>
   )

@@ -455,7 +455,10 @@ const Summary = () => {
                                 </Typography>
 
                               </Box>
-                              <Pie
+
+                              
+                              {pieChartItems.length > 0 ? (
+                                <Pie
                                 data={{
                                   labels: pieChartItems.map((item) => item.category),
                                   datasets: [
@@ -496,6 +499,9 @@ const Summary = () => {
                                   },
                                 }}
                               />
+                              ) : (
+                                <h6 style={{ textAlign: "center", marginTop:"50%" }}>No data found!</h6>
+                              )}
 
                             </div>
                           )}

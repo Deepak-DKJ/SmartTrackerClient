@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import AppBar from '@mui/material/AppBar';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { LoadingButton } from '@mui/lab';
+
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import Drawer from '@mui/material/Drawer';
@@ -11,7 +13,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { useTheme } from "@mui/material/styles";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import HomeIcon from '@mui/icons-material/Home';
@@ -42,7 +48,7 @@ import InputLabel from '@mui/material/InputLabel';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell, CircularProgress } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -128,6 +134,17 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
     justifyContent: 'center',
 }));
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
+
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: 'inherit',
     width: '100%',
@@ -144,15 +161,76 @@ function DrawerAppBar(props) {
         setAnchorElUser(event.currentTarget);
     };
 
+    const theme = useTheme();
+
+    const handleChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setShowTags(
+            typeof value === "string" ? value.split(",") : value // Handle single or multiple selections
+        );
+    };
+
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
 
+    const handleChange1 = () => {
+        if (expEarnings && expExpenses) {
+            setExpEarnings(false);
+            setExpExpenses(false);
+        }
+        else {
+            setExpEarnings(true);
+            setExpExpenses(true);
+        }
+    };
+    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, filtersExport, setFiltersExport, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
+
+    const [expExpenses, setExpExpenses] = React.useState(filtersExport.showExpenses);
+    const [expEarnings, setExpEarnings] = React.useState(filtersExport.showEarnings);
+    const [expReport, setExpReport] = React.useState(filtersExport.detailedReport);
+    const [showTags, setShowTags] = React.useState(filtersExport.tags);
+
+    const handleChange2 = (event) => {
+        if (expExpenses === false)
+            setExpExpenses(true)
+        else
+            setExpExpenses(false)
+    };
+
+    const handleChange3 = (event) => {
+        if (expEarnings === false)
+            setExpEarnings(true)
+        else
+            setExpEarnings(false)
+    };
+
+    const handleChange4 = () => {
+        if (expReport === true)
+            setExpReport(false)
+        else setExpReport(true)
+    };
+
+    const children = (
+        <Box sx={{ display: 'flex', flexDirection: 'row', ml: 3 }}>
+            <FormControlLabel
+                label="Expenses"
+                control={<Checkbox size="small" checked={expExpenses} onChange={handleChange2} />}
+            />
+            <FormControlLabel
+                label="Earnings"
+                control={<Checkbox size="small" checked={expEarnings} onChange={handleChange3} />}
+            />
+        </Box>
+    );
+
     const { page } = props;
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
     const [openFilterModal, setOpenFilterModal] = React.useState(false);
+    const [openExportModal, setOpenExportModal] = React.useState(false);
     const user = JSON.parse(localStorage.getItem("userdata"));
     // console.log(user)
     // Handlers for opening and closing the modal
@@ -162,6 +240,15 @@ function DrawerAppBar(props) {
 
     const handleCloseFilterModal = () => {
         setOpenFilterModal(false);
+    };
+
+    const handleOpenExportModal = () => {
+        handleCloseUserMenu()
+        setOpenExportModal(true);
+    };
+
+    const handleCloseExportModal = () => {
+        setOpenExportModal(false);
     };
 
     const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -234,7 +321,10 @@ function DrawerAppBar(props) {
         setCatList((categories) => categories.filter((cat) => cat !== categoryToDelete));
     };
 
+    const [loadingExcel, setLoadingExcel] = React.useState(false);
+
     const handleExportToExcel = () => {
+        setLoadingExcel(true)
         const headerTitle = `Expenses & Earnings Summary - ${Label}`;
 
         // Rows for the summary section
@@ -303,12 +393,18 @@ function DrawerAppBar(props) {
         // Create Workbook and Append Worksheet
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "SmartTracker Detailed Report");
-
+        setLoadingExcel(false)
         // Export File
         XLSX.writeFile(workbook, `Detailed Summary - ${Label}.xlsx`);
     };
+    const [loading, setLoading] = React.useState(false);
 
-    const handleExportToPDF = () => {
+    const handleExportToPDF = (IsCustom) => {
+        console.log(expExpenses)
+        console.log(expEarnings)
+        console.log(expReport)
+        console.log(showTags)
+        setLoading(true);
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -327,110 +423,143 @@ function DrawerAppBar(props) {
 
         loadLogo((img) => {
             // Add Title at the Top
-            doc.setFontSize(16);
-            const textWidth = doc.getTextWidth(title);
-            const titleY = 20; // Fixed position at the top
-            doc.text(title, (pageWidth - textWidth) / 2, titleY);
+            let flag = false
+            if ((IsCustom === false || (expEarnings || expExpenses)) && (Object.entries(chartItems)).length > 0) {
+                flag = true;
+                doc.setFontSize(16);
 
-            // Add Summary Table
-            const tableRows = [];
-            const startY = titleY + 10; // Start further below the title
-            Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
-                tableRows.push([date, `Rs. ${expense}`, `Rs. ${earning}`]);
-            });
-            tableRows.push([]);
-            tableRows.push(["Total", `Rs. ${summaryItems?.Expense}`, `Rs. ${summaryItems?.Earning}`]);
+                const textWidth = doc.getTextWidth(title);
+                const titleY = 20; // Fixed position at the top
+                doc.text(title, (pageWidth - textWidth) / 2, titleY);
 
-            doc.autoTable({
-                head: [["Date", "Expenses", "Earnings"]],
-                body: tableRows,
-                startY,
-                styles: { fontSize: 14, halign: "center" },
-                headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-            });
+                // Dynamically create table headers and rows
+                const tableHeaders = ["Date"];
+                if (IsCustom === false || expExpenses) tableHeaders.push("Expenses");
+                if (IsCustom === false || expEarnings) tableHeaders.push("Earnings");
 
-            // Add Report Generated Date Caption
-            const caption = `Report generated on: ${currentDate}`;
-            doc.setFontSize(13);
-            doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, pageHeight - 10);
+                const tableRows = [];
+                const startY = titleY + 10; // Start further below the title
 
-            // Add Watermark as Background
-            const logoWidth = pageWidth * 0.6; // Adjust logo size (50% of page width)
-            const logoHeight = (img.height / img.width) * logoWidth; // Maintain aspect ratio
-            const x = (pageWidth - logoWidth) / 2; // Center horizontally
-            const y = (pageHeight - logoHeight) / 2; // Center vertically
+                Object.entries(chartItems).forEach(([date, { expense, earning }]) => {
+                    const row = [date];
+                    if (IsCustom === false || expExpenses) row.push(`Rs. ${expense}`);
+                    if (IsCustom === false || expEarnings) row.push(`Rs. ${earning}`);
+                    tableRows.push(row);
+                });
 
-            doc.setGState(new doc.GState({ opacity: 0.18 })); // Light opacity
-            doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW"); // Set blend mode
-            doc.setGState(new doc.GState({ opacity: 1 })); // Reset opacity
+                // Add totals row if applicable
+                const totalRow = ["Total"];
+                if (IsCustom === false || expExpenses) totalRow.push(`Rs. ${summaryItems?.Expense}`);
+                if (IsCustom === false || expEarnings) totalRow.push(`Rs. ${summaryItems?.Earning}`);
+                tableRows.push([]);
+                tableRows.push(totalRow);
 
-            // Add Detailed Summary on New Page
-            doc.addPage();
+                // Generate the table
+                doc.autoTable({
+                    head: [tableHeaders],
+                    body: tableRows,
+                    startY,
+                    styles: { fontSize: 14, halign: "center" },
+                    headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
+                });
+
+                // Add Report Generated Date Caption
+                const caption = `Report generated on: ${currentDate}`;
+                doc.setFontSize(13);
+                doc.text(caption, pageWidth - doc.getTextWidth(caption) - 10, pageHeight - 10);
+
+                // Add Watermark as Background
+                const logoWidth = pageWidth * 0.6; // Adjust logo size (50% of page width)
+                const logoHeight = (img.height / img.width) * logoWidth; // Maintain aspect ratio
+                const x = (pageWidth - logoWidth) / 2; // Center horizontally
+                const y = (pageHeight - logoHeight) / 2; // Center vertically
+
+                doc.setGState(new doc.GState({ opacity: 0.18 })); // Light opacity
+                doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW"); // Set blend mode
+                doc.setGState(new doc.GState({ opacity: 1 })); // Reset opacity
+            }
 
             // Re-add watermark for the new page
             // doc.setGState(new doc.GState({ opacity: 0.08 }));
             // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
             // doc.setGState(new doc.GState({ opacity: 1 }));
-
-            doc.setFontSize(15);
-            const detailedSummaryTitle = "Detailed Summary";
-            const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
-            doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
-
-            // Iterate Through Items By Date
-            let detailedStartY = 30; // Start content slightly lower
-            Object.entries(chartItems).forEach(([date]) => {
-                const records = items[date];
-                doc.setFontSize(14);
-                doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
-                detailedStartY += 10;
-
-                // Prepare Table Rows for Each Date
-                const detailedRows = records.map((record) => [
-                    record.itemName,
-                    `Rs. ${record.totalPrice}`,
-                    record.quantity,
-                    record.category,
-                    record.type,
-                    record.desc === "" ? "NA" : record.desc,
-                ]);
-
-                // Add Table for Current Date
-                doc.autoTable({
-                    head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
-                    body: detailedRows,
-                    startY: detailedStartY,
-                    styles: { fontSize: 12, halign: "center" },
-                    headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
-                    margin: { top: 10 },
-                });
-                // doc.setGState(new doc.GState({ opacity: 0.08 }));
-                // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
-                // doc.setGState(new doc.GState({ opacity: 1 }));
-
-                // Update Y Position for Next Date
-                detailedStartY = doc.lastAutoTable.finalY + 10;
-
-                // Add Page If Space is Insufficient
-                if (detailedStartY + 20 > pageHeight) {
+            if ((IsCustom === false || expReport) && (Object.entries(chartItems)).length > 0) {
+                if (IsCustom === false || flag)
                     doc.addPage();
+                doc.setFontSize(15);
+                const detailedSummaryTitle = "Detailed Summary";
+                const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
+                doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
 
-                    // Re-add watermark for new page
+                // Iterate Through Items By Date
+                let detailedStartY = 30; // Start content slightly lower
+                Object.entries(chartItems).forEach(([date]) => {
+                    const records = items[date];
+
+                    // Prepare Table Rows for Each Date
+                    const detailedRows = records
+                        .filter((record) => showTags.length === 0 || showTags.includes(record.category)) // Filter based on showTags or include all if empty
+                        .map((record) => [
+                            record.itemName,
+                            `Rs. ${record.totalPrice}`,
+                            record.quantity,
+                            record.category,
+                            record.type,
+                            record.desc === "" ? "NA" : record.desc,
+                        ]);
+                    console.log(detailedRows)
+                    if(detailedRows.length === 0)
+                        return;
+                    doc.setFontSize(14);
+                    doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
+                    detailedStartY += 10;
+
+                    // Add Table for Current Date
+                    doc.autoTable({
+                        head: [["Item Name", "Price", "Quantity", "Category", "Type", "Item Notes"]],
+                        body: detailedRows,
+                        startY: detailedStartY,
+                        styles: { fontSize: 12, halign: "center" },
+                        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: "center" },
+                        margin: { top: 10 },
+                    });
                     // doc.setGState(new doc.GState({ opacity: 0.08 }));
                     // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
                     // doc.setGState(new doc.GState({ opacity: 1 }));
 
-                    detailedStartY = 30; // Start new content lower
-                }
-            });
+                    // Update Y Position for Next Date
+                    detailedStartY = doc.lastAutoTable.finalY + 10;
+
+                    // Add Page If Space is Insufficient
+                    if (detailedStartY + 20 > pageHeight) {
+                        doc.addPage();
+
+                        // Re-add watermark for new page
+                        // doc.setGState(new doc.GState({ opacity: 0.08 }));
+                        // doc.addImage(img, "PNG", x, y, logoWidth, logoHeight, undefined, "SLOW");
+                        // doc.setGState(new doc.GState({ opacity: 1 }));
+
+                        detailedStartY = 30; // Start new content lower
+                    }
+                });
+            }
+
+            if ((!expReport && !expEarnings && !expExpenses) || (Object.entries(chartItems)).length === 0) {
+                doc.setFontSize(15);
+                const detailedSummaryTitle = "No data available to display";
+                const detailedTextWidth = doc.getTextWidth(detailedSummaryTitle);
+                doc.text(detailedSummaryTitle, (pageWidth - detailedTextWidth) / 2, 10);
+            }
 
             // Save PDF
+            setLoading(false);
             doc.save(`Summary - ${Label}.pdf`);
         });
+
+        if(IsCustom === true)
+         handleCloseExportModal();
+        
     };
-
-
-
 
     const getStringDate = (date) => {
         // const date = new Date();
@@ -684,7 +813,7 @@ function DrawerAppBar(props) {
                                             }}
                                             color="primary"
                                             variant="contained"
-                                            sx={{ marginBottom: "20px"}}
+                                            sx={{ marginBottom: "20px" }}
                                         >
                                             Apply Filters
                                         </Button>
@@ -841,16 +970,16 @@ function DrawerAppBar(props) {
                                         <Box
                                             sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                                         >
-                                             <Button
-                                            onClick={() => {
-                                                handleTagClose();
-                                            }}
-                                            size='small'
-                                            variant="contained"
-                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
-                                        >
-                                            close
-                                        </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    handleTagClose();
+                                                }}
+                                                size='small'
+                                                variant="contained"
+                                                sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                            >
+                                                close
+                                            </Button>
                                             <Button
                                                 onClick={handleSave}
                                                 variant="contained"
@@ -1043,6 +1172,132 @@ function DrawerAppBar(props) {
 
                         {page === 'reports' && (
                             <>
+                                <Dialog
+                                    open={openExportModal}
+                                    onClose={(event, reason) => {
+                                        if (reason === "backdropClick") {
+                                            // Do nothing to prevent dialog close
+                                            return;
+                                        }
+                                        handleCloseExportModal(); // Handle explicit close actions
+                                    }}
+                                    maxWidth="xs"
+                                    keepMounted
+                                    TransitionComponent={Transition}
+
+                                    BackdropProps={{
+                                        style: {
+                                            backgroundColor: "rgba(0, 0, 0, 0.8)",
+                                        },
+                                    }}
+                                >
+                                    <DialogTitle>Export Custom Report</DialogTitle>
+                                    <DialogContent>
+                                        <Box>
+                                            <Typography variant="body2"
+                                                sx={{
+                                                    color: "lightgrey",
+                                                    marginBottom: "10px",
+                                                    wordBreak: "break-word", // Prevent overflow of long text
+                                                    flex: 1, // Take up available space
+                                                }}
+                                            >Choose desired fields for the report:</Typography>
+                                            <div>
+                                                <FormControlLabel
+                                                    label="Show Summary"
+                                                    control={
+                                                        <Checkbox
+                                                            checked={expEarnings && expExpenses}
+                                                            indeterminate={expEarnings !== expExpenses}
+                                                            onChange={handleChange1}
+                                                        />
+                                                    }
+                                                />
+                                                {children}
+
+                                                <FormControlLabel sx={{ marginBottom: "20px" }} control={<Checkbox checked={expReport} onChange={handleChange4} />} label="Show Detailed Report" />
+                                            </div>
+
+                                            {/* <TextField
+                                                select
+                                                fullWidth
+                                                label="Select Tag"
+                                                value={catType}
+                                                onChange={(e) => setCatType(e.target.value)}
+                                                style={{ marginBottom: "15px" }}
+
+                                            >
+                                                <MenuItem value="Any">Any</MenuItem>
+                                                {catList.map((catgry) => (
+                                                    <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                                                ))}
+                                            </TextField> */}
+
+                                            <FormControl fullWidth style={{ marginBottom: "10px" }}>
+                                                <InputLabel id="multi-select-checkbox-label">Display Selective Tag(s)</InputLabel>
+                                                <Select
+                                                    labelId="multi-select-checkbox-label"
+                                                    id="multi-select-checkbox"
+                                                    multiple
+                                                    value={showTags}
+                                                    onChange={handleChange}
+                                                    input={<OutlinedInput label="Display Selective Tag(s)" />}
+                                                    renderValue={(selected) => (
+                                                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                                                            {selected.map((value) => (
+                                                                <Chip key={value} label={value} />
+                                                            ))}
+                                                        </Box>
+                                                    )}
+                                                    MenuProps={MenuProps}
+                                                >
+                                                    {catList.map((catgry) => (
+                                                        <MenuItem key={catgry} value={catgry}>
+                                                            <Checkbox checked={showTags.includes(catgry)} />
+                                                            <ListItemText primary={catgry} />
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Box>
+                                    </DialogContent>
+                                    <Box
+                                        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                                    >
+                                        <Button
+                                            onClick={() => {
+                                                handleCloseExportModal();
+                                            }}
+                                            size='small'
+                                            variant="contained"
+                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                        >
+                                            close
+                                        </Button>
+                                        <LoadingButton
+            onClick={() => {
+                localStorage.setItem(
+                    'filterExport',
+                    JSON.stringify({
+                        showExpenses: true, // Example values
+                        showEarnings: true,
+                        detailedReport: true,
+                        tags: [],
+                    })
+                );
+                handleExportToPDF(true);
+            }}
+            endIcon={<PictureAsPdfIcon />}
+            loading={loading}
+            loadingPosition="end" // Places spinner at the end
+            color="primary"
+            variant="contained"
+            sx={{ marginBottom: "20px" }}
+        >
+            {loading ? "Generating..." : "Download"}
+        </LoadingButton>
+                                    </Box>
+                                </Dialog>
                                 <Typography variant="h6" noWrap component="div" sx={{ marginLeft: "auto" }}>
                                     Smart Tracker
                                 </Typography>
@@ -1053,7 +1308,7 @@ function DrawerAppBar(props) {
                                             marginLeft: "auto",
                                             fontSize: "28px",
                                             marginRight: "8px",
-                                            backgroundColor: "cyan", // Gradient background
+                                            backgroundColor: "cyan",
                                             borderRadius: "50%", // Circular shape for the icon
                                             padding: "3px", // Add padding for a larger clickable area
                                             color: "black", // White icon color
@@ -1088,7 +1343,7 @@ function DrawerAppBar(props) {
                                     keepMounted
                                     transformOrigin={{
                                         vertical: "top",
-                                        horizontal: "right",
+                                        horizontal: "left",
                                     }}
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
@@ -1101,12 +1356,15 @@ function DrawerAppBar(props) {
                                             },
                                             color: "white", // White text color
                                         }}
-                                        onClick={handleExportToPDF}
+                                        onClick={() => handleExportToPDF(false)}
                                     >
                                         <Typography sx={{ textAlign: "center" }}>
-                                            Export to PDF
+                                            {loading === true ? (
+                                                <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
+                                            ) : "Export to PDF"}
                                         </Typography>
                                     </MenuItem>
+
 
                                     <MenuItem
                                         sx={{
@@ -1118,7 +1376,23 @@ function DrawerAppBar(props) {
                                         onClick={handleExportToExcel}
                                     >
                                         <Typography sx={{ textAlign: "center" }}>
-                                            Export to Excel
+                                            {loadingExcel === true ? (
+                                                <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
+                                            ) : "Export to Excel"}
+                                        </Typography>
+                                    </MenuItem>
+
+                                    <MenuItem
+                                        sx={{
+                                            "&:hover": {
+                                                backgroundColor: "#444", // Darker background on hover
+                                            },
+                                            color: "white", // White text color
+                                        }}
+                                        onClick={handleOpenExportModal}
+                                    >
+                                        <Typography sx={{ textAlign: "center" }}>
+                                            Custom Export
                                         </Typography>
                                     </MenuItem>
                                 </Menu>
