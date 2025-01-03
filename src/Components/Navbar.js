@@ -400,10 +400,10 @@ function DrawerAppBar(props) {
     const [loading, setLoading] = React.useState(false);
 
     const handleExportToPDF = (IsCustom) => {
-        console.log(expExpenses)
-        console.log(expEarnings)
-        console.log(expReport)
-        console.log(showTags)
+        // console.log(expExpenses)
+        // console.log(expEarnings)
+        // console.log(expReport)
+        // console.log(showTags)
         setLoading(true);
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -507,7 +507,7 @@ function DrawerAppBar(props) {
                             record.type,
                             record.desc === "" ? "NA" : record.desc,
                         ]);
-                    console.log(detailedRows)
+                    // console.log(detailedRows)
                     if(detailedRows.length === 0)
                         return;
                     doc.setFontSize(14);
