@@ -48,7 +48,7 @@ import InputLabel from '@mui/material/InputLabel';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell, CircularProgress } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell, CircularProgress, Alert } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -59,12 +59,14 @@ import "jspdf-autotable";
 import AddIcon from '@mui/icons-material/Add';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import InfoIcon from '@mui/icons-material/Info';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
     Paper,
     Chip,
     Fab,
 } from '@mui/material';
 import axios from 'axios';
+import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
@@ -256,6 +258,66 @@ function DrawerAppBar(props) {
         const storedValue = localStorage.getItem('showInfo');
         return storedValue !== null ? JSON.parse(storedValue) : true;
     });
+    const [showRepeat, setShowRepeat] = React.useState(false)
+    const [topRecords, setTopRecords] = React.useState([]);
+    const handleRepeatOpen = () => {
+        let data = filteredItems
+        if (data === undefined || data === null || Object.keys(data).length === 0)
+            data = items
+
+        let freq = {}
+        Object.entries(data).forEach(([date, records]) => {
+            records.forEach((record) => {
+                const key = `${record.itemName}|${record.quantity}|${record.totalPrice}|${record.type}|${record.category}`;
+                freq[key] = (freq[key] || 0) + 1;
+            });
+        });
+        const sortedFreq = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+        // The top sorted records should have frequency > 1, filter it
+        const topRecords = sortedFreq.filter((record) => record[1] > 1);
+        // console.log(topRecords)
+        setTopRecords(topRecords);
+    }
+    const handleRepeatClose = () => {
+        setShowRepeat(false)
+    }
+    const [successMsg, setSuccessMsg] = React.useState("");
+    const [open2, setOpen2] = React.useState(false);
+    const handleAddEntry = async (record) => {
+        handleRepeatClose();
+        setSuccessMsg("Entry added successfully!")
+        const dt = new Date(selectedDate)
+        try {
+            const data = {
+                date: selectedDate,
+                record: record
+            };
+            let authToken = localStorage.getItem("token");
+            // console.log(authToken);
+            const response = await axios.post(`${baseUrl}/items/addFreqItem`, data, {
+                headers: {
+                    Token: authToken, // Set the Authorization header with Bearer token
+                    withCredentials: true,
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+            const dat = response.data;
+            const btn = document.getElementById("successsnackbar");
+            if (btn) btn.click();
+            //   console.log(dat)
+            setItems({});
+            setSelectedDate(dayjs())
+
+        } catch (err) {
+            // console.log("Error1: ", err);
+            console.log("Error2: ", err.response);
+        }
+    };
+
+    const [selectedDate, setSelectedDate] = React.useState(dayjs());
+    const handleDateChange = (date) => {
+        setSelectedDate(date);
+    };
     const [savedList, setSavedList] = React.useState(catList);
     const [newCategory, setNewCategory] = React.useState("");
     const handleAddCategory = () => {
@@ -508,7 +570,7 @@ function DrawerAppBar(props) {
                             record.desc === "" ? "NA" : record.desc,
                         ]);
                     // console.log(detailedRows)
-                    if(detailedRows.length === 0)
+                    if (detailedRows.length === 0)
                         return;
                     doc.setFontSize(14);
                     doc.text(`Date: ${date}`, 10, detailedStartY); // Add Date as Header
@@ -556,9 +618,16 @@ function DrawerAppBar(props) {
             doc.save(`Summary - ${Label}.pdf`);
         });
 
-        if(IsCustom === true)
-         handleCloseExportModal();
-        
+        if (IsCustom === true)
+            handleCloseExportModal();
+
+    };
+    const handleClose2 = (event, reason) => {
+        if (reason === "clickaway") {
+            return;
+        }
+
+        setOpen2(false);
     };
 
     const getStringDate = (date) => {
@@ -694,285 +763,101 @@ function DrawerAppBar(props) {
     }
 
     return (
-        <>
-            <Box sx={{ display: 'flex' }}>
-                <CssBaseline />
-                <AppBar component="nav">
-                    <Toolbar>
-                        <IconButton
-                            color="inherit"
-                            aria-label="open drawer"
-                            edge="start"
-                            onClick={handleDrawerToggle}
-                            sx={{ mr: page === "reports" ? 0 : 2, display: { sm: "none" } }}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        {/* Smart Tracker */}
+
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <>
+                <Box sx={{ display: 'flex' }}>
+                    <CssBaseline />
+                    <AppBar component="nav">
+                        <Toolbar>
+                            <IconButton
+                                color="inherit"
+                                aria-label="open drawer"
+                                edge="start"
+                                onClick={handleDrawerToggle}
+                                sx={{ mr: page === "reports" ? 0 : 2, display: { sm: "none" } }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                            {/* Smart Tracker */}
 
 
-                        {page === 'dashboard' && (
-                            <>
+                            {page === 'dashboard' && (
+                                <>
 
-                                <Dialog
-                                    open={openFilterModal}
-                                    onClose={(event, reason) => {
-                                        if (reason === "backdropClick") {
-                                            // Do nothing to prevent dialog close
-                                            return;
-                                        }
-                                        handleCloseFilterModal(); // Handle explicit close actions
-                                    }}
-                                    maxWidth="xs"
-                                    keepMounted
-                                    TransitionComponent={Transition}
-
-                                    BackdropProps={{
-                                        style: {
-                                            backgroundColor: "rgba(0, 0, 0, 0.8)",
-                                        },
-                                    }}
-                                >
-                                    <DialogTitle>Filter Options</DialogTitle>
-                                    <DialogContent>
-                                        <Box>
-                                            {/* Last X Days Selection */}
-                                            <TextField
-                                                select
-                                                fullWidth
-                                                label="Select Duration"
-                                                value={daysNumber}
-                                                onChange={(e) => setDaysNumber(parseInt(e.target.value, 10))}
-                                                style={{ marginBottom: "20px", marginTop: "20px" }}
-                                            >
-                                                <MenuItem value={7}>One week</MenuItem>
-                                                <MenuItem value={30}>One month </MenuItem>
-                                                <MenuItem value={180}>Six months </MenuItem>
-                                                <MenuItem value={365}>One year </MenuItem>
-                                            </TextField>
-
-                                            {/* Type Selection */}
-                                            <TextField
-                                                select
-                                                fullWidth
-                                                label="Select Type"
-                                                value={filterType}
-                                                onChange={(e) => setFilterType(e.target.value)}
-                                                style={{ marginBottom: "15px" }}
-                                            >
-                                                <MenuItem value="All">Any</MenuItem>
-                                                <MenuItem value="Expense">Expense</MenuItem>
-                                                <MenuItem value="Earning">Earning</MenuItem>
-                                            </TextField>
-
-                                            <TextField
-                                                select
-                                                fullWidth
-                                                label="Select Tag"
-                                                value={catType}
-                                                onChange={(e) => setCatType(e.target.value)}
-                                                style={{ marginBottom: "15px" }}
-
-                                            >
-                                                <MenuItem value="Any">Any</MenuItem>
-                                                {catList.map((catgry) => (
-                                                    <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
-                                                ))}
-                                            </TextField>
-                                        </Box>
-                                    </DialogContent>
-                                    <Box
-                                        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-                                    >
-                                        <Button
-                                            onClick={() => {
-                                                handleCloseFilterModal();
-                                            }}
-                                            size='small'
-                                            variant="contained"
-                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
-                                        >
-                                            close
-                                        </Button>
-                                        <Button
-                                            onClick={() => {
-                                                setFilters({
-                                                    lastxdays: daysNumber,
-                                                    type: filterType,
-                                                    cat: catType
-                                                });
-
-                                                localStorage.setItem('filterLocal', JSON.stringify({
-                                                    lastxdays: daysNumber,
-                                                    type: filterType,
-                                                    cat: catType
-                                                }))
-                                                // Handle filter application here
-                                                //   getLastxDaysData(filters.lastxdays)
-                                                handleCloseFilterModal();
-                                            }}
-                                            color="primary"
-                                            variant="contained"
-                                            sx={{ marginBottom: "20px" }}
-                                        >
-                                            Apply Filters
-                                        </Button>
-                                    </Box>
-                                </Dialog>
-                                <Typography variant="h6" noWrap component="div">
-                                    Smart Tracker
-                                </Typography>
-
-                                {searchString === "" ? (
-                                    <Tooltip title="Filters" arrow>
-                                        <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
-                                    </Tooltip>
-                                ) : (
-                                    <Tooltip title="Clear" arrow>
-                                        <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
-                                    </Tooltip>
-                                )
-                                }
-
-                                <Search sx={{ marginLeft: 'auto' }}>
-                                    <SearchIconWrapper>
-                                        <SearchIcon fontSize='small' />
-                                    </SearchIconWrapper>
-                                    <StyledInputBase
-                                        placeholder="Search"
-                                        value={searchString}
-                                        onChange={(e) => setSearchString(e.target.value)}
-                                        inputProps={{ 'aria-label': 'search' }}
-                                    />
-                                </Search>
-                            </>
-                        )}
-
-                        {page === 'create' && (
-                            <>
-
-                                <Typography sx={{ ml: 4 }} variant="h6" noWrap component="div">
-                                    Smart Tracker
-                                </Typography>
-                                <Tooltip title="Configure Tags" arrow>
-                                    <LocalOfferIcon
-                                        onClick={() => {
-                                            setCatList(savedList)
-                                            // setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
-                                            setDialogOpen(true)
-                                        }}
-                                        sx={{ marginLeft: 'auto', fontSize: "24px" }}
-                                    />
-                                </Tooltip>
-                                <Tooltip title="How to Use" arrow>
-                                    <InfoIcon
-                                        onClick={() => setShowInfo(true)}
-                                        sx={{ marginLeft: '18px', fontSize: "27px", marginRight: "6px" }}
-                                    />
-                                </Tooltip>
-
-                                <Snackbar
-                                    autoHideDuration={3000}
-                                    anchorOrigin={{ vertical: "top", horizontal: "left" }}
-                                    open={alert.vis}
-                                    onClose={() => {
-                                        setAlert({
-                                            vis: false,
-                                            msg: "",
-                                        });
-                                    }}
-                                    sx={{
-                                        position: "fixed",
-                                        top: "8.2vh"
-                                    }}
-                                    TransitionComponent={Slide}
-                                    message={alert.msg}
-
-                                    ContentProps={{
-                                        style: {
-                                            backgroundColor: "#333",  // Dark background
-                                            color: "#fff",            // Light text color
-                                        },
-                                    }}
-                                />
-
-
-                                <Box>
-                                    <Dialog open={dialogOpen}
+                                    <Dialog
+                                        open={openFilterModal}
                                         onClose={(event, reason) => {
                                             if (reason === "backdropClick") {
                                                 // Do nothing to prevent dialog close
                                                 return;
                                             }
-                                            handleTagClose(); // Handle explicit close actions
+                                            handleCloseFilterModal(); // Handle explicit close actions
                                         }}
+                                        maxWidth="xs"
+                                        keepMounted
                                         TransitionComponent={Transition}
-                                        fullWidth maxWidth="sm" BackdropProps={{
-                                            sx: {
-                                                backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+
+                                        BackdropProps={{
+                                            style: {
+                                                backgroundColor: "rgba(0, 0, 0, 0.8)",
                                             },
-                                        }}>
-                                        <DialogTitle>Manage Categories</DialogTitle>
+                                        }}
+                                    >
+                                        <DialogTitle>Filter Options</DialogTitle>
                                         <DialogContent>
-                                            <Paper
-                                                sx={{
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    flexWrap: 'wrap',
-                                                    listStyle: 'none',
-                                                    p: 0,
-                                                    paddingTop: "8px",
-                                                    paddingBottom: "8px",
-                                                    m: 0,
-                                                }}
-                                                component="ul"
-                                            >
-                                                {catList !== undefined && catList.map((category, index) => (
-                                                    <ListItem key={index}>
-                                                        <Chip
-                                                            variant="contained"
-                                                            icon={categoryIcons[category]}
-                                                            label={category}
-                                                            onDelete={!hardcodedCategories.includes(category) ? handleDelete(category) : undefined}
-                                                            color={hardcodedCategories.includes(category) ? "default" : "primary"} // Optional to differentiate
-                                                        />
-
-                                                    </ListItem>
-                                                ))}
-                                            </Paper>
-
-                                            {/* Add New Category */}
-                                            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                                            <Box>
+                                                {/* Last X Days Selection */}
                                                 <TextField
-                                                    label="New Category"
-                                                    value={newCategory}
-                                                    onChange={(e) => setNewCategory(e.target.value)}
+                                                    select
                                                     fullWidth
-                                                />
-                                                <Fab
-                                                    size="small" // Ensures proper dimensions
-                                                    onClick={handleAddCategory}
-                                                    sx={{
-                                                        marginLeft: 1.5,
-                                                        width: 50, // Ensures a perfect circular size
-                                                        height: 45,
-                                                        padding: "10px",
-                                                        backgroundColor: "white",
-                                                        color: "black"
-                                                    }}
+                                                    label="Select Duration"
+                                                    value={daysNumber}
+                                                    onChange={(e) => setDaysNumber(parseInt(e.target.value, 10))}
+                                                    style={{ marginBottom: "20px", marginTop: "20px" }}
                                                 >
-                                                    <AddIcon />
-                                                </Fab>
+                                                    <MenuItem value={7}>One week</MenuItem>
+                                                    <MenuItem value={30}>One month </MenuItem>
+                                                    <MenuItem value={180}>Six months </MenuItem>
+                                                    <MenuItem value={365}>One year </MenuItem>
+                                                </TextField>
 
+                                                {/* Type Selection */}
+                                                <TextField
+                                                    select
+                                                    fullWidth
+                                                    label="Select Type"
+                                                    value={filterType}
+                                                    onChange={(e) => setFilterType(e.target.value)}
+                                                    style={{ marginBottom: "15px" }}
+                                                >
+                                                    <MenuItem value="All">Any</MenuItem>
+                                                    <MenuItem value="Expense">Expense</MenuItem>
+                                                    <MenuItem value="Earning">Earning</MenuItem>
+                                                </TextField>
+
+                                                <TextField
+                                                    select
+                                                    fullWidth
+                                                    label="Select Tag"
+                                                    value={catType}
+                                                    onChange={(e) => setCatType(e.target.value)}
+                                                    style={{ marginBottom: "15px" }}
+
+                                                >
+                                                    <MenuItem value="Any">Any</MenuItem>
+                                                    {catList.map((catgry) => (
+                                                        <MenuItem key={catgry} value={catgry}>{catgry}</MenuItem>
+                                                    ))}
+                                                </TextField>
                                             </Box>
                                         </DialogContent>
-
                                         <Box
                                             sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                                         >
                                             <Button
                                                 onClick={() => {
-                                                    handleTagClose();
+                                                    handleCloseFilterModal();
                                                 }}
                                                 size='small'
                                                 variant="contained"
@@ -981,244 +866,599 @@ function DrawerAppBar(props) {
                                                 close
                                             </Button>
                                             <Button
-                                                onClick={handleSave}
+                                                onClick={() => {
+                                                    setFilters({
+                                                        lastxdays: daysNumber,
+                                                        type: filterType,
+                                                        cat: catType
+                                                    });
+
+                                                    localStorage.setItem('filterLocal', JSON.stringify({
+                                                        lastxdays: daysNumber,
+                                                        type: filterType,
+                                                        cat: catType
+                                                    }))
+                                                    // Handle filter application here
+                                                    //   getLastxDaysData(filters.lastxdays)
+                                                    handleCloseFilterModal();
+                                                }}
+                                                color="primary"
                                                 variant="contained"
-                                                sx={{ marginBottom: "20px", color: "black", backgroundColor: "white" }}
+                                                sx={{ marginBottom: "20px" }}
                                             >
-                                                Save
+                                                Apply Filters
                                             </Button>
                                         </Box>
                                     </Dialog>
-                                </Box>
+                                    <Typography variant="h6" noWrap component="div">
+                                        Smart Tracker
+                                    </Typography>
 
-                                <Box>
+                                    {searchString === "" ? (
+                                        <Tooltip title="Filters" arrow>
+                                            <FilterAltIcon onClick={handleOpenFilterModal} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                        </Tooltip>
+                                    ) : (
+                                        <Tooltip title="Clear" arrow>
+                                            <ClearIcon onClick={() => setSearchString("")} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                        </Tooltip>
+                                    )
+                                    }
+
+                                    <Search sx={{ marginLeft: 'auto' }}>
+                                        <SearchIconWrapper>
+                                            <SearchIcon fontSize='small' />
+                                        </SearchIconWrapper>
+                                        <StyledInputBase
+                                            placeholder="Search"
+                                            value={searchString}
+                                            onChange={(e) => setSearchString(e.target.value)}
+                                            inputProps={{ 'aria-label': 'search' }}
+                                        />
+                                    </Search>
+                                </>
+                            )}
+
+                            {page === 'create' && (
+                                <>
+
+                                    <Typography sx={{ ml: 2 }} variant="h6" noWrap component="div">
+                                        Smart Tracker
+                                    </Typography>
+                                    <Tooltip title="Configure Tags" arrow>
+                                        <LocalOfferIcon
+                                            onClick={() => {
+                                                setCatList(savedList)
+                                                // setCatList(JSON.parse(localStorage.getItem("catList")) || hardcodedCategories)
+                                                setDialogOpen(true)
+                                            }}
+                                            sx={{ marginLeft: 'auto', fontSize: "24px" }}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip title="How to Use" arrow>
+                                        <InfoIcon
+                                            onClick={() => setShowInfo(true)}
+                                            sx={{ marginLeft: '18px', fontSize: "27px" }}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip title="Repeat Transaction" arrow>
+                                        <EventRepeatIcon
+                                            onClick={() => {
+                                                handleRepeatOpen();
+                                                setShowRepeat(true);
+                                            }}
+                                            sx={{ marginLeft: '18px', fontSize: "27px", marginRight: "6px" }}
+                                        />
+                                    </Tooltip>
+
+                                    <Snackbar
+                                        autoHideDuration={3000}
+                                        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                                        open={alert.vis}
+                                        onClose={() => {
+                                            setAlert({
+                                                vis: false,
+                                                msg: "",
+                                            });
+                                        }}
+                                        sx={{
+                                            position: "fixed",
+                                            top: "8.2vh"
+                                        }}
+                                        TransitionComponent={Slide}
+                                        message={alert.msg}
+
+                                        ContentProps={{
+                                            style: {
+                                                backgroundColor: "#333",  // Dark background
+                                                color: "#fff",            // Light text color
+                                            },
+                                        }}
+                                    />
+
+
+                                    <Box>
+                                        <Dialog open={dialogOpen}
+                                            onClose={(event, reason) => {
+                                                if (reason === "backdropClick") {
+                                                    // Do nothing to prevent dialog close
+                                                    return;
+                                                }
+                                                handleTagClose(); // Handle explicit close actions
+                                            }}
+                                            TransitionComponent={Transition}
+                                            fullWidth maxWidth="sm" BackdropProps={{
+                                                sx: {
+                                                    backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                                },
+                                            }}>
+                                            <DialogTitle>Manage Categories</DialogTitle>
+                                            <DialogContent>
+                                                <Paper
+                                                    sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        flexWrap: 'wrap',
+                                                        listStyle: 'none',
+                                                        p: 0,
+                                                        paddingTop: "8px",
+                                                        paddingBottom: "8px",
+                                                        m: 0,
+                                                    }}
+                                                    component="ul"
+                                                >
+                                                    {catList !== undefined && catList.map((category, index) => (
+                                                        <ListItem key={index}>
+                                                            <Chip
+                                                                variant="contained"
+                                                                icon={categoryIcons[category]}
+                                                                label={category}
+                                                                onDelete={!hardcodedCategories.includes(category) ? handleDelete(category) : undefined}
+                                                                color={hardcodedCategories.includes(category) ? "default" : "primary"} // Optional to differentiate
+                                                            />
+
+                                                        </ListItem>
+                                                    ))}
+                                                </Paper>
+
+                                                {/* Add New Category */}
+                                                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                                                    <TextField
+                                                        label="New Category"
+                                                        value={newCategory}
+                                                        onChange={(e) => setNewCategory(e.target.value)}
+                                                        fullWidth
+                                                    />
+                                                    <Fab
+                                                        size="small" // Ensures proper dimensions
+                                                        onClick={handleAddCategory}
+                                                        sx={{
+                                                            marginLeft: 1.5,
+                                                            width: 50, // Ensures a perfect circular size
+                                                            height: 45,
+                                                            padding: "10px",
+                                                            backgroundColor: "white",
+                                                            color: "black"
+                                                        }}
+                                                    >
+                                                        <AddIcon />
+                                                    </Fab>
+
+                                                </Box>
+                                            </DialogContent>
+
+                                            <Box
+                                                sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                                            >
+                                                <Button
+                                                    onClick={() => {
+                                                        handleTagClose();
+                                                    }}
+                                                    size='small'
+                                                    variant="contained"
+                                                    sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                                >
+                                                    close
+                                                </Button>
+                                                <Button
+                                                    onClick={handleSave}
+                                                    variant="contained"
+                                                    sx={{ marginBottom: "20px", color: "black", backgroundColor: "white" }}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </Box>
+                                        </Dialog>
+                                    </Box>
+
+                                    <Box>
+                                        <Button
+                                            id="successsnackbar"
+                                            style={{ display: "none" }}
+                                            onClick={() => setOpen2(true)}
+                                        >
+                                            Open Snackbar
+                                        </Button>
+                                        <Snackbar open={open2} autoHideDuration={3000} onClose={handleClose2}>
+                                            <Alert
+                                                onClose={handleClose2}
+                                                severity="success"
+                                                variant="filled"
+                                                sx={{ width: "96%", color: "white", position: "fixed", top: "8.2vh", textAlign: 'center' }}
+                                            >
+                                                {successMsg}
+                                            </Alert>
+                                        </Snackbar>
+                                        <Dialog
+                                            open={showRepeat}
+                                            onClose={(event, reason) => {
+                                                if (reason === "backdropClick") {
+                                                    return; // Prevent dialog close on backdrop click
+                                                }
+                                                handleRepeatClose(); // Handle explicit close actions
+                                            }}
+                                            TransitionComponent={Transition}
+                                            fullWidth
+                                            maxWidth="sm"
+                                            BackdropProps={{
+                                                sx: {
+                                                    backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                                },
+                                            }}
+                                        >
+                                            <DialogTitle
+                                                sx={{
+                                                    backgroundColor: '#434343',
+                                                    color: '#ffffff',
+                                                }}
+                                            >
+                                                Frequently Added Entries
+                                            </DialogTitle>
+                                            <DialogContent
+                                                sx={{
+                                                    backgroundColor: '#434343',
+                                                    color: '#cfcfcf',
+                                                    padding: '0', // Remove padding for better layout control
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    maxHeight: '60vh', // Set a fixed height for the dialog
+                                                }}
+                                            >
+                                                {/* Fixed Date Picker */}
+                                                <Box
+                                                    sx={{
+                                                        backgroundColor: '#434343',
+                                                        padding: '13px',
+                                                        position: 'sticky',
+                                                        top: 0,
+                                                        zIndex: 10,
+                                                    }}
+                                                >
+                                                    <MobileDatePicker
+                                                        sx={{
+                                                            backgroundColor: '#434343',
+                                                            width: '100%',
+                                                            textAlign: 'center',
+                                                        }}
+                                                        label="Change Date"
+                                                        value={selectedDate}
+                                                        closeOnSelect={true}
+                                                        onChange={handleDateChange}
+                                                        format="DD MMM, YYYY"
+                                                        disableFuture={true}
+                                                    />
+                                                </Box>
+
+                                                {/* Scrollable Content */}
+                                                <Box
+                                                    sx={{
+                                                        flex: 1,
+                                                        overflowY: 'auto',
+                                                        paddingBottom: '13px',
+                                                        paddingLeft: '13px',
+                                                        paddingRight: '13px',
+                                                        paddingTop: "4px",
+                                                    }}
+                                                >
+                                                    {topRecords.length > 0 ? (
+                                                        topRecords.map(([record, frequency], index) => {
+                                                            const [itemName, quantity, totalPrice, type, category] = record.split('|');
+                                                            return (
+                                                                <Box
+                                                                    key={index}
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center',
+                                                                        marginTop: '0px',
+                                                                        marginBottom: '12px',
+                                                                        padding: '8px',
+                                                                        paddingLeft:"15px",
+                                                                        paddingRight:"12px",
+                                                                        borderRadius: '10px',
+                                                                        backgroundColor: '#2a2a2a',
+                                                                    }}
+                                                                >
+                                                                    <Box>
+                                                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#ffffff' }}>
+                                                                            {itemName} ₹{totalPrice}
+                                                                        </Typography>
+                                                                        <Typography variant="body2" sx={{ color: '#a3a3a3' }}>
+                                                                            {`${quantity} | ${category}`}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    <Button
+                                                                        size="small"
+                                                                        variant="contained"
+                                                                        sx={{
+                                                                            backgroundColor: 'cyan',
+                                                                            color: 'black',
+                                                                        }}
+                                                                        onClick={() => handleAddEntry({ itemName, quantity, totalPrice, type, category })}
+                                                                    >
+                                                                        Add
+                                                                    </Button>
+                                                                </Box>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <Typography sx={{ color: '#cfcfcf', textAlign: 'center' }}>
+                                                            No frequent records found.
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </DialogContent>
+
+
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', backgroundColor: '#434343' }}>
+                                                <Button
+                                                    onClick={() => {
+                                                        handleRepeatClose();
+                                                    }}
+                                                    size="small"
+                                                    variant="contained"
+                                                    sx={{
+                                                        marginTop: "10px",
+                                                        marginBottom: "15px",
+                                                        backgroundColor: 'white',
+                                                        color: 'black'
+                                                    }}
+                                                >
+                                                    Close
+                                                </Button>
+                                            </Box>
+                                        </Dialog>
+
+                                    </Box>
+
+                                    <Box>
+                                        <Dialog
+                                            open={showInfo}
+                                            fullWidth
+                                            TransitionComponent={Transition}
+                                            maxWidth="sm"
+                                            onClose={(event, reason) => {
+                                                if (reason === "backdropClick") {
+                                                    // Do nothing to prevent dialog close
+                                                    return;
+                                                }
+                                                handleUnderstand(); // Handle explicit close actions
+                                            }}
+                                            BackdropProps={{
+                                                sx: {
+                                                    backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                                },
+                                            }}
+                                        >
+                                            <DialogContent sx={{ paddingBottom: "0px" }}>
+                                                {/* Step-by-step instructions */}
+                                                <Box sx={{ marginBottom: 2 }}>
+                                                    <Typography
+                                                        variant="h6"
+                                                        sx={{
+                                                            textAlign: "center",
+                                                            marginBottom: 1,
+                                                            fontWeight: "bold",
+                                                            color: "white",
+                                                        }}
+                                                    >
+                                                        How to add an entry?
+                                                    </Typography>
+                                                    <TableContainer>
+                                                        <Table>
+                                                            <TableBody>
+                                                                {/* Step 1 */}
+                                                                <TableRow>
+                                                                    <TableCell
+                                                                        sx={{
+                                                                            width: "75px", // Consistent width for the step column
+                                                                        }}
+                                                                    >
+                                                                        Step 1
+                                                                    </TableCell>
+                                                                    <TableCell
+                                                                        sx={{
+                                                                            color: "lightgrey",
+                                                                            padding: "0px"
+                                                                        }}
+                                                                    >
+                                                                        Type in the textbox or Tap mic to speak
+                                                                    </TableCell>
+                                                                </TableRow>
+
+                                                                {/* Step 2 */}
+                                                                <TableRow>
+                                                                    <TableCell>
+                                                                        Step 2
+                                                                    </TableCell>
+                                                                    <TableCell
+                                                                        sx={{
+                                                                            color: "lightgrey",
+                                                                            padding: "0px"
+                                                                        }}
+                                                                    >
+                                                                        Hit on CREATE
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            </TableBody>
+                                                        </Table>
+                                                    </TableContainer>
+
+                                                </Box>
+
+
+
+                                            </DialogContent>
+                                            <Box>
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{
+                                                        marginBottom: 1,
+                                                        fontWeight: "bold",
+                                                        color: "white",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    Sample Inputs:
+                                                </Typography>
+                                                {/* Scrollable Box Container */}
+                                                <Box
+                                                    sx={{
+                                                        maxHeight: "260px", // Limit height of the scrollable container
+                                                        overflowY: "auto", // Enable vertical scrolling
+                                                        padding: 1, // Padding to avoid content touching dialog borders
+                                                        backgroundColor: "#434343", // Background color for the container
+                                                        borderRadius: 2, // Rounded corners
+                                                        margin: "5px",
+                                                        // boxShadow: "0 4px 10px rgba(0,0,0,0.3)", // Add subtle shadow for better UI
+                                                    }}
+                                                >
+                                                    {sampleInputs.map((input, index) => (
+                                                        <Box
+                                                            key={index}
+                                                            sx={{
+                                                                display: "flex",
+                                                                justifyContent: "space-between",
+                                                                alignItems: "center",
+                                                                padding: 1.3, // Padding inside each card
+                                                                borderRadius: 2, // Rounded corners for cards
+                                                                backgroundColor: "#2c2c2c", // Card background color
+                                                                marginBottom: 1, // Spacing between cards
+                                                                "&:last-child": {
+                                                                    marginBottom: 0, // Remove margin for the last card
+                                                                },
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{
+                                                                    color: "lightgrey",
+                                                                    wordBreak: "break-word", // Prevent overflow of long text
+                                                                    flex: 1, // Take up available space
+                                                                }}
+                                                            >
+                                                                {input}
+                                                            </Typography>
+                                                            <Button
+                                                                size="small"
+                                                                variant="contained"
+                                                                // color=''
+                                                                onClick={() => handleTry(input)}
+                                                                sx={{
+                                                                    // color: "black",
+                                                                    // borderColor: "red",
+                                                                    // backgroundColor:'white',
+                                                                    textTransform: "none",
+                                                                    fontWeight: "bold",
+                                                                    padding: "2px 8px",
+                                                                    fontSize: "0.7rem",
+                                                                    marginLeft: 0.3, // Space between text and button
+                                                                }}
+                                                            >
+                                                                Try
+                                                            </Button>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </Box>
+
+
+                                            {/* Bottom button */}
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    padding: 2,
+                                                }}
+                                            >
+                                                <Button
+                                                    onClick={() => handleUnderstand()}
+                                                    variant="contained"
+                                                    // size='small'
+                                                    sx={{
+                                                        color: 'black',
+                                                        backgroundColor: 'white',
+                                                        fontWeight: 'bold',
+                                                    }}
+                                                >
+                                                    Got it
+                                                </Button>
+                                            </Box>
+                                        </Dialog>
+                                    </Box>
+                                </>
+                            )}
+
+                            {page === 'reports' && (
+                                <>
                                     <Dialog
-                                        open={showInfo}
-                                        fullWidth
-                                        TransitionComponent={Transition}
-                                        maxWidth="sm"
+                                        open={openExportModal}
                                         onClose={(event, reason) => {
                                             if (reason === "backdropClick") {
                                                 // Do nothing to prevent dialog close
                                                 return;
                                             }
-                                            handleUnderstand(); // Handle explicit close actions
+                                            handleCloseExportModal(); // Handle explicit close actions
                                         }}
+                                        maxWidth="xs"
+                                        keepMounted
+                                        TransitionComponent={Transition}
+
                                         BackdropProps={{
-                                            sx: {
-                                                backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                            style: {
+                                                backgroundColor: "rgba(0, 0, 0, 0.8)",
                                             },
                                         }}
                                     >
-                                        <DialogContent sx={{ paddingBottom: "0px" }}>
-                                            {/* Step-by-step instructions */}
-                                            <Box sx={{ marginBottom: 2 }}>
-                                                <Typography
-                                                    variant="h6"
+                                        <DialogTitle>Export Custom Report</DialogTitle>
+                                        <DialogContent>
+                                            <Box>
+                                                <Typography variant="body2"
                                                     sx={{
-                                                        textAlign: "center",
-                                                        marginBottom: 1,
-                                                        fontWeight: "bold",
-                                                        color: "white",
+                                                        color: "lightgrey",
+                                                        marginBottom: "10px",
+                                                        wordBreak: "break-word", // Prevent overflow of long text
+                                                        flex: 1, // Take up available space
                                                     }}
-                                                >
-                                                    How to add an entry?
-                                                </Typography>
-                                                <TableContainer>
-                                                    <Table>
-                                                        <TableBody>
-                                                            {/* Step 1 */}
-                                                            <TableRow>
-                                                                <TableCell
-                                                                    sx={{
-                                                                        width: "75px", // Consistent width for the step column
-                                                                    }}
-                                                                >
-                                                                    Step 1
-                                                                </TableCell>
-                                                                <TableCell
-                                                                    sx={{
-                                                                        color: "lightgrey",
-                                                                        padding: "0px"
-                                                                    }}
-                                                                >
-                                                                    Type in the textbox or Tap mic to speak
-                                                                </TableCell>
-                                                            </TableRow>
+                                                >Choose desired fields for the report:</Typography>
+                                                <div>
+                                                    <FormControlLabel
+                                                        label="Show Summary"
+                                                        control={
+                                                            <Checkbox
+                                                                checked={expEarnings && expExpenses}
+                                                                indeterminate={expEarnings !== expExpenses}
+                                                                onChange={handleChange1}
+                                                            />
+                                                        }
+                                                    />
+                                                    {children}
 
-                                                            {/* Step 2 */}
-                                                            <TableRow>
-                                                                <TableCell>
-                                                                    Step 2
-                                                                </TableCell>
-                                                                <TableCell
-                                                                    sx={{
-                                                                        color: "lightgrey",
-                                                                        padding: "0px"
-                                                                    }}
-                                                                >
-                                                                    Hit on CREATE
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        </TableBody>
-                                                    </Table>
-                                                </TableContainer>
+                                                    <FormControlLabel sx={{ marginBottom: "20px" }} control={<Checkbox checked={expReport} onChange={handleChange4} />} label="Show Detailed Report" />
+                                                </div>
 
-                                            </Box>
-
-
-
-                                        </DialogContent>
-                                        <Box>
-                                            <Typography
-                                                variant="h6"
-                                                sx={{
-                                                    marginBottom: 1,
-                                                    fontWeight: "bold",
-                                                    color: "white",
-                                                    textAlign: "center",
-                                                }}
-                                            >
-                                                Sample Inputs:
-                                            </Typography>
-                                            {/* Scrollable Box Container */}
-                                            <Box
-                                                sx={{
-                                                    maxHeight: "260px", // Limit height of the scrollable container
-                                                    overflowY: "auto", // Enable vertical scrolling
-                                                    padding: 1, // Padding to avoid content touching dialog borders
-                                                    backgroundColor: "#434343", // Background color for the container
-                                                    borderRadius: 2, // Rounded corners
-                                                    margin: "5px",
-                                                    // boxShadow: "0 4px 10px rgba(0,0,0,0.3)", // Add subtle shadow for better UI
-                                                }}
-                                            >
-                                                {sampleInputs.map((input, index) => (
-                                                    <Box
-                                                        key={index}
-                                                        sx={{
-                                                            display: "flex",
-                                                            justifyContent: "space-between",
-                                                            alignItems: "center",
-                                                            padding: 1.3, // Padding inside each card
-                                                            borderRadius: 2, // Rounded corners for cards
-                                                            backgroundColor: "#2c2c2c", // Card background color
-                                                            marginBottom: 1, // Spacing between cards
-                                                            "&:last-child": {
-                                                                marginBottom: 0, // Remove margin for the last card
-                                                            },
-                                                        }}
-                                                    >
-                                                        <Typography
-                                                            variant="body2"
-                                                            sx={{
-                                                                color: "lightgrey",
-                                                                wordBreak: "break-word", // Prevent overflow of long text
-                                                                flex: 1, // Take up available space
-                                                            }}
-                                                        >
-                                                            {input}
-                                                        </Typography>
-                                                        <Button
-                                                            size="small"
-                                                            variant="contained"
-                                                            // color=''
-                                                            onClick={() => handleTry(input)}
-                                                            sx={{
-                                                                // color: "black",
-                                                                // borderColor: "red",
-                                                                // backgroundColor:'white',
-                                                                textTransform: "none",
-                                                                fontWeight: "bold",
-                                                                padding: "2px 8px",
-                                                                fontSize: "0.7rem",
-                                                                marginLeft: 0.3, // Space between text and button
-                                                            }}
-                                                        >
-                                                            Try
-                                                        </Button>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        </Box>
-
-
-                                        {/* Bottom button */}
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                width: '100%',
-                                                padding: 2,
-                                            }}
-                                        >
-                                            <Button
-                                                onClick={() => handleUnderstand()}
-                                                variant="contained"
-                                                // size='small'
-                                                sx={{
-                                                    color: 'black',
-                                                    backgroundColor: 'white',
-                                                    fontWeight: 'bold',
-                                                }}
-                                            >
-                                                Got it
-                                            </Button>
-                                        </Box>
-                                    </Dialog>
-                                </Box>
-                            </>
-                        )}
-
-                        {page === 'reports' && (
-                            <>
-                                <Dialog
-                                    open={openExportModal}
-                                    onClose={(event, reason) => {
-                                        if (reason === "backdropClick") {
-                                            // Do nothing to prevent dialog close
-                                            return;
-                                        }
-                                        handleCloseExportModal(); // Handle explicit close actions
-                                    }}
-                                    maxWidth="xs"
-                                    keepMounted
-                                    TransitionComponent={Transition}
-
-                                    BackdropProps={{
-                                        style: {
-                                            backgroundColor: "rgba(0, 0, 0, 0.8)",
-                                        },
-                                    }}
-                                >
-                                    <DialogTitle>Export Custom Report</DialogTitle>
-                                    <DialogContent>
-                                        <Box>
-                                            <Typography variant="body2"
-                                                sx={{
-                                                    color: "lightgrey",
-                                                    marginBottom: "10px",
-                                                    wordBreak: "break-word", // Prevent overflow of long text
-                                                    flex: 1, // Take up available space
-                                                }}
-                                            >Choose desired fields for the report:</Typography>
-                                            <div>
-                                                <FormControlLabel
-                                                    label="Show Summary"
-                                                    control={
-                                                        <Checkbox
-                                                            checked={expEarnings && expExpenses}
-                                                            indeterminate={expEarnings !== expExpenses}
-                                                            onChange={handleChange1}
-                                                        />
-                                                    }
-                                                />
-                                                {children}
-
-                                                <FormControlLabel sx={{ marginBottom: "20px" }} control={<Checkbox checked={expReport} onChange={handleChange4} />} label="Show Detailed Report" />
-                                            </div>
-
-                                            {/* <TextField
+                                                {/* <TextField
                                                 select
                                                 fullWidth
                                                 label="Select Tag"
@@ -1233,199 +1473,200 @@ function DrawerAppBar(props) {
                                                 ))}
                                             </TextField> */}
 
-                                            <FormControl fullWidth style={{ marginBottom: "10px" }}>
-                                                <InputLabel id="multi-select-checkbox-label">Display Selective Tag(s)</InputLabel>
-                                                <Select
-                                                    labelId="multi-select-checkbox-label"
-                                                    id="multi-select-checkbox"
-                                                    multiple
-                                                    value={showTags}
-                                                    onChange={handleChange}
-                                                    input={<OutlinedInput label="Display Selective Tag(s)" />}
-                                                    renderValue={(selected) => (
-                                                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                                                            {selected.map((value) => (
-                                                                <Chip key={value} label={value} />
-                                                            ))}
-                                                        </Box>
-                                                    )}
-                                                    MenuProps={MenuProps}
-                                                >
-                                                    {catList.map((catgry) => (
-                                                        <MenuItem key={catgry} value={catgry}>
-                                                            <Checkbox checked={showTags.includes(catgry)} />
-                                                            <ListItemText primary={catgry} />
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                        </Box>
-                                    </DialogContent>
-                                    <Box
-                                        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-                                    >
-                                        <Button
-                                            onClick={() => {
-                                                handleCloseExportModal();
-                                            }}
-                                            size='small'
-                                            variant="contained"
-                                            sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                                <FormControl fullWidth style={{ marginBottom: "10px" }}>
+                                                    <InputLabel id="multi-select-checkbox-label">Display Selective Tag(s)</InputLabel>
+                                                    <Select
+                                                        labelId="multi-select-checkbox-label"
+                                                        id="multi-select-checkbox"
+                                                        multiple
+                                                        value={showTags}
+                                                        onChange={handleChange}
+                                                        input={<OutlinedInput label="Display Selective Tag(s)" />}
+                                                        renderValue={(selected) => (
+                                                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                                                                {selected.map((value) => (
+                                                                    <Chip key={value} label={value} />
+                                                                ))}
+                                                            </Box>
+                                                        )}
+                                                        MenuProps={MenuProps}
+                                                    >
+                                                        {catList.map((catgry) => (
+                                                            <MenuItem key={catgry} value={catgry}>
+                                                                <Checkbox checked={showTags.includes(catgry)} />
+                                                                <ListItemText primary={catgry} />
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </Box>
+                                        </DialogContent>
+                                        <Box
+                                            sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                                         >
-                                            close
-                                        </Button>
-                                        <LoadingButton
-            onClick={() => {
-                localStorage.setItem(
-                    'filterExport',
-                    JSON.stringify({
-                        showExpenses: true, // Example values
-                        showEarnings: true,
-                        detailedReport: true,
-                        tags: [],
-                    })
-                );
-                handleExportToPDF(true);
-            }}
-            endIcon={<PictureAsPdfIcon />}
-            loading={loading}
-            loadingPosition="end" // Places spinner at the end
-            color="primary"
-            variant="contained"
-            sx={{ marginBottom: "20px" }}
-        >
-            {loading ? "Generating..." : "Download"}
-        </LoadingButton>
-                                    </Box>
-                                </Dialog>
-                                <Typography variant="h6" noWrap component="div" sx={{ marginLeft: "auto" }}>
-                                    Smart Tracker
-                                </Typography>
-                                <Tooltip title="Download Report" arrow>
-                                    <DownloadIcon
-                                        onClick={handleClickUserMenu}
+                                            <Button
+                                                onClick={() => {
+                                                    handleCloseExportModal();
+                                                }}
+                                                size='small'
+                                                variant="contained"
+                                                sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                            >
+                                                close
+                                            </Button>
+                                            <LoadingButton
+                                                onClick={() => {
+                                                    localStorage.setItem(
+                                                        'filterExport',
+                                                        JSON.stringify({
+                                                            showExpenses: true, // Example values
+                                                            showEarnings: true,
+                                                            detailedReport: true,
+                                                            tags: [],
+                                                        })
+                                                    );
+                                                    handleExportToPDF(true);
+                                                }}
+                                                endIcon={<PictureAsPdfIcon />}
+                                                loading={loading}
+                                                loadingPosition="end" // Places spinner at the end
+                                                color="primary"
+                                                variant="contained"
+                                                sx={{ marginBottom: "20px" }}
+                                            >
+                                                {loading ? "Generating..." : "Download"}
+                                            </LoadingButton>
+                                        </Box>
+                                    </Dialog>
+                                    <Typography variant="h6" noWrap component="div" sx={{ marginLeft: "auto" }}>
+                                        Smart Tracker
+                                    </Typography>
+                                    <Tooltip title="Download Report" arrow>
+                                        <DownloadIcon
+                                            onClick={handleClickUserMenu}
+                                            sx={{
+                                                marginLeft: "auto",
+                                                fontSize: "28px",
+                                                marginRight: "8px",
+                                                backgroundColor: "cyan",
+                                                borderRadius: "50%", // Circular shape for the icon
+                                                padding: "3px", // Add padding for a larger clickable area
+                                                color: "black", // White icon color
+                                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Add subtle shadow
+                                                transition: "all 0.3s ease", // Smooth transition for hover effects
+                                                "&:hover": {
+                                                    transform: "scale(1.1)", // Slightly increase the size on hover
+                                                },
+                                                "&:active": {
+                                                    transform: "scale(0.80)", // Slightly reduce size on click
+                                                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Shadow reduction on click
+                                                },
+                                            }}
+                                        />
+                                    </Tooltip>
+
+
+                                    <Menu
                                         sx={{
-                                            marginLeft: "auto",
-                                            fontSize: "28px",
-                                            marginRight: "8px",
-                                            backgroundColor: "cyan",
-                                            borderRadius: "50%", // Circular shape for the icon
-                                            padding: "3px", // Add padding for a larger clickable area
-                                            color: "black", // White icon color
-                                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Add subtle shadow
-                                            transition: "all 0.3s ease", // Smooth transition for hover effects
-                                            "&:hover": {
-                                                transform: "scale(1.1)", // Slightly increase the size on hover
-                                            },
-                                            "&:active": {
-                                                transform: "scale(0.80)", // Slightly reduce size on click
-                                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Shadow reduction on click
+                                            mt: "45px",
+                                            "& .MuiPaper-root": {
+                                                backgroundColor: "#333", // Dark background for the menu
+                                                color: "white", // White text color
                                             },
                                         }}
-                                    />
-                                </Tooltip>
-
-
-                                <Menu
-                                    sx={{
-                                        mt: "45px",
-                                        "& .MuiPaper-root": {
-                                            backgroundColor: "#333", // Dark background for the menu
-                                            color: "white", // White text color
-                                        },
-                                    }}
-                                    id="menu-appbar"
-                                    anchorEl={anchorElUser}
-                                    anchorOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
-                                    keepMounted
-                                    transformOrigin={{
-                                        vertical: "top",
-                                        horizontal: "left",
-                                    }}
-                                    open={Boolean(anchorElUser)}
-                                    onClose={handleCloseUserMenu}
-                                >
-
-                                    <MenuItem
-                                        sx={{
-                                            "&:hover": {
-                                                backgroundColor: "#444", // Darker background on hover
-                                            },
-                                            color: "white", // White text color
+                                        id="menu-appbar"
+                                        anchorEl={anchorElUser}
+                                        anchorOrigin={{
+                                            vertical: "top",
+                                            horizontal: "right",
                                         }}
-                                        onClick={() => handleExportToPDF(false)}
+                                        keepMounted
+                                        transformOrigin={{
+                                            vertical: "top",
+                                            horizontal: "left",
+                                        }}
+                                        open={Boolean(anchorElUser)}
+                                        onClose={handleCloseUserMenu}
                                     >
-                                        <Typography sx={{ textAlign: "center" }}>
-                                            {loading === true ? (
-                                                <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
-                                            ) : "Export to PDF"}
-                                        </Typography>
-                                    </MenuItem>
+
+                                        <MenuItem
+                                            sx={{
+                                                "&:hover": {
+                                                    backgroundColor: "#444", // Darker background on hover
+                                                },
+                                                color: "white", // White text color
+                                            }}
+                                            onClick={() => handleExportToPDF(false)}
+                                        >
+                                            <Typography sx={{ textAlign: "center" }}>
+                                                {loading === true ? (
+                                                    <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
+                                                ) : "Export to PDF"}
+                                            </Typography>
+                                        </MenuItem>
 
 
-                                    <MenuItem
-                                        sx={{
-                                            "&:hover": {
-                                                backgroundColor: "#444", // Darker background on hover
-                                            },
-                                            color: "white", // White text color
-                                        }}
-                                        onClick={handleExportToExcel}
-                                    >
-                                        <Typography sx={{ textAlign: "center" }}>
-                                            {loadingExcel === true ? (
-                                                <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
-                                            ) : "Export to Excel"}
-                                        </Typography>
-                                    </MenuItem>
+                                        <MenuItem
+                                            sx={{
+                                                "&:hover": {
+                                                    backgroundColor: "#444", // Darker background on hover
+                                                },
+                                                color: "white", // White text color
+                                            }}
+                                            onClick={handleExportToExcel}
+                                        >
+                                            <Typography sx={{ textAlign: "center" }}>
+                                                {loadingExcel === true ? (
+                                                    <span className='text-center'>Downloading <CircularProgress color="inherit" size={16} /></span>
+                                                ) : "Export to Excel"}
+                                            </Typography>
+                                        </MenuItem>
 
-                                    <MenuItem
-                                        sx={{
-                                            "&:hover": {
-                                                backgroundColor: "#444", // Darker background on hover
-                                            },
-                                            color: "white", // White text color
-                                        }}
-                                        onClick={handleOpenExportModal}
-                                    >
-                                        <Typography sx={{ textAlign: "center" }}>
-                                            Custom Export
-                                        </Typography>
-                                    </MenuItem>
-                                </Menu>
+                                        <MenuItem
+                                            sx={{
+                                                "&:hover": {
+                                                    backgroundColor: "#444", // Darker background on hover
+                                                },
+                                                color: "white", // White text color
+                                            }}
+                                            onClick={handleOpenExportModal}
+                                        >
+                                            <Typography sx={{ textAlign: "center" }}>
+                                                Custom Export
+                                            </Typography>
+                                        </MenuItem>
+                                    </Menu>
 
-                            </>
+                                </>
 
-                        )}
+                            )}
 
-                    </Toolbar>
+                        </Toolbar>
 
-                </AppBar>
-                <nav>
-                    <Drawer
-                        container={container}
-                        variant="temporary"
-                        open={mobileOpen}
-                        onClose={handleDrawerToggle}
-                        ModalProps={{
-                            keepMounted: true, // Better open performance on mobile.
-                        }}
-                        sx={{
-                            display: { xs: 'block', sm: 'none' },
-                            '& .MuiDrawer-paper': { boxSizing: 'border-box', minWidth: drawerWidth },
-                        }}
-                    >
-                        {drawer}
-                    </Drawer>
-                </nav>
-                <Box component="main">
-                    <Toolbar />
+                    </AppBar>
+                    <nav>
+                        <Drawer
+                            container={container}
+                            variant="temporary"
+                            open={mobileOpen}
+                            onClose={handleDrawerToggle}
+                            ModalProps={{
+                                keepMounted: true, // Better open performance on mobile.
+                            }}
+                            sx={{
+                                display: { xs: 'block', sm: 'none' },
+                                '& .MuiDrawer-paper': { boxSizing: 'border-box', minWidth: drawerWidth },
+                            }}
+                        >
+                            {drawer}
+                        </Drawer>
+                    </nav>
+                    <Box component="main">
+                        <Toolbar />
+                    </Box>
                 </Box>
-            </Box>
-        </>
+            </>
+        </ LocalizationProvider>
     );
 }
 
