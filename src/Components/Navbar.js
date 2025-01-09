@@ -284,8 +284,8 @@ function DrawerAppBar(props) {
     const [successMsg, setSuccessMsg] = React.useState("");
     const [open2, setOpen2] = React.useState(false);
     const handleAddEntry = async (record) => {
-        handleRepeatClose();
         setSuccessMsg("Entry added successfully!")
+        handleRepeatClose();
         const dt = new Date(selectedDate)
         try {
             const data = {
@@ -1086,7 +1086,7 @@ function DrawerAppBar(props) {
                                                 variant="filled"
                                                 sx={{ width: "96%", color: "white", position: "fixed", top: "8.2vh", textAlign: 'center' }}
                                             >
-                                                {successMsg}
+                                                Entry added successfully!
                                             </Alert>
                                         </Snackbar>
                                         <Dialog
