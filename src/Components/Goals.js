@@ -666,7 +666,7 @@ const Goals = () => {
                                                         <div style={{ width: '100%', maxWidth: 400, height: '41.1vh', margin: 'auto' }}>
                                                             {(barChartData !== null && barChartData.length > 0) ? (
                                                                 <>
-                                                                    <Bar data={data2} options={options2} height={300} />
+                                                                    <Bar data={data2} options={options2} height={290} />
                                                                 </>
                                                             ) : (
                                                                 <Box display="flex" alignItems="center" justifyContent={"center"} mb={2} mt={0}>
