@@ -250,16 +250,16 @@ const Goals = () => {
         }
     };
 
-    useEffect(() => {
-        // console.log(goalSettings?.goalDuration)
-        if (goalSettings?.goalDuration === 1)
-            setGoalPeriodString("Daily");
-        else if (goalSettings?.goalDuration === 7)
-            setGoalPeriodString("Weekly");
-        else if (goalSettings?.goalDuration === 30)
-            setGoalPeriodString("Monthly");
-        setGoalAmount(500 * goalSettings?.goalDuration);
-    }, [goalSettings?.goalDuration])
+    // useEffect(() => {
+    //     // console.log(goalSettings?.goalDuration)
+    //     if (goalSettings?.goalDuration === 1)
+    //         setGoalPeriodString("Daily");
+    //     else if (goalSettings?.goalDuration === 7)
+    //         setGoalPeriodString("Weekly");
+    //     else if (goalSettings?.goalDuration === 30)
+    //         setGoalPeriodString("Monthly");
+    //     setGoalAmount(500 * goalSettings?.goalDuration);
+    // }, [goalSettings?.goalDuration])
 
     useEffect(() => {
         if (goalDuration === 1)
