@@ -221,6 +221,7 @@ const Goals = () => {
             return;
         // console.log(currentRange)
         // console.log("ITEMS Current Range : ", currentRange);
+        // console.log(goalPeriodString)
         // console.log("Items : ", items);
         fetchChartsData(currentRange);
     }, [currentRange, items]);
@@ -238,12 +239,17 @@ const Goals = () => {
     };
 
     useEffect(() => {
-        if (goalDuration === '1')
+        // console.log(goalSettings?.goalDuration)
+        if (goalSettings?.goalDuration === 1)
             setGoalPeriodString("Daily");
-        else if (goalDuration === '7')
+        else if (goalSettings?.goalDuration === 7)
             setGoalPeriodString("Weekly");
-        else if (goalDuration === '30')
+        else if (goalSettings?.goalDuration === 30)
             setGoalPeriodString("Monthly");
+        setGoalAmount(500 * goalSettings?.goalDuration);
+    }, [goalSettings?.goalDuration])
+
+    useEffect(() => {
         setGoalAmount(500 * goalDuration);
     }, [goalDuration])
 

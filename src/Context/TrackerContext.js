@@ -1,6 +1,6 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import { children, createContext, useState } from "react";
+import { children, createContext, useEffect, useState } from "react";
 const TrackerContext = createContext()
 
 const TrackerProvider = ({ children }) => {
@@ -48,6 +48,33 @@ const TrackerProvider = ({ children }) => {
     startDate: dayjs().startOf("day"),
     endDate: dayjs().endOf("day"),
   });
+  useEffect(() => {
+    const now = dayjs();
+    let startDate, endDate;
+
+    if (goalSettings.goalDuration === 1) {
+        // Daily: Today only
+        startDate = now.startOf("day");
+        endDate = now.endOf("day");
+    } else if (goalSettings.goalDuration === 7) {
+        // Weekly: Monday to Sunday of the current week
+        if (now.weekday() === 0) {
+            // Special case: Sunday (treat as the current week)
+            startDate = now.subtract(6, "days").startOf("day"); // Go back to Monday
+            endDate = now.endOf("day"); // Today (Sunday)
+        } else {
+            startDate = now.startOf("week").add(1, "day"); // Monday
+            endDate = startDate.add(6, "days").endOf("day"); // Sunday
+        }
+    } else if (goalSettings.goalDuration === 30) {
+        // Monthly: Start to end of the current month
+        startDate = now.startOf("month");
+        endDate = now.endOf("month");
+    }
+
+    // Update currentRange state
+    setCurrentRange({ startDate, endDate });
+}, [goalSettings.goalDuration]); 
   const [pieChartData, setPieChartData] = useState(null);
   const [barChartData, setBarChartData] = useState(null);
 
