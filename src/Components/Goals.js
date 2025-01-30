@@ -444,7 +444,7 @@ const Goals = () => {
                 <Box sx={{ padding: 3.5 }}>
                     <Box
                         sx={{
-                            marginTop: 1,
+                            marginTop: 0,
                             padding: 1.5,
                             borderRadius: 2,
                             bgcolor: "#2E2E2E",
@@ -466,7 +466,7 @@ const Goals = () => {
                         </Box>
                     </Box>
                     <hr style={{marginTop:"25px"}}/>
-                    <Typography sx={{ textAlign: 'center', marginTop: 3.5 }} variant="h6" gutterBottom>
+                    <Typography sx={{ textAlign: 'center', marginTop: 2.5 }} variant="h6" gutterBottom>
                         <span><AdsClickIcon sx={{ marginBottom: "5px" }} /> Configure your Goals</span>
                     </Typography>
 
@@ -538,12 +538,12 @@ const Goals = () => {
             ) : (
                 <Box>
                     <Typography sx={{ textAlign: 'center', margin: "10px" }} variant="h6" gutterBottom>
-                        <span><InsightsIcon sx={{ marginBottom: "9px" }} /> {goalPeriodString} Goal Insights</span>
+                        <span><InsightsIcon sx={{ marginBottom: "5px" }} /> {goalPeriodString} Goal Insights</span>
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: "0px" }}>
                         <Box sx={{ width: "94%", maxWidth: "600px" }}>
                             {(barChartData !== null) && (
-                                 <Card sx={{ marginBottom: "0px", p: 1.5, borderRadius: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                                 <Card sx={{ backgroundColor:"#323232" ,marginBottom: "0px", p: 1.5, borderRadius: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
                                  <Box display="flex" justifyContent="space-between" alignItems="center">
                                      {(goalSettings?.goalType === "Expense") ? (
                                          <Typography variant="subtitle1">
@@ -575,7 +575,7 @@ const Goals = () => {
                              </Card>
                             )}
                            
-                            <Box sx={{ bgcolor: 'background.paper', width: "100%", marginTop: "16px", borderRadius: 2 }}>
+                            <Box sx={{ bgcolor: 'background.paper', width: "100%", marginTop: "12px", borderRadius: 2 }}>
 
                                 <Box p={1.8} sx={{ width: "100%", height: '59vh', paddingBottom: '0px', overflowY: 'auto' }}>
                                     <div
