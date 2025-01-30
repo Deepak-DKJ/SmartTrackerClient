@@ -44,8 +44,8 @@ const Input = styled(MuiInput)`
 
 
 const Goals = () => {
-    const { currentRange, setCurrentRange, items, pieChartData, setPieChartData, barChartData, setBarChartData, fetch_data, goalSettings, setGoalSettings, showGoalInsights, setShowGoalInsights } = React.useContext(TrackerContext);
-    const [goalPeriodString, setGoalPeriodString] = React.useState("Daily");
+    const { goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, items, pieChartData, setPieChartData, barChartData, setBarChartData, fetch_data, goalSettings, setGoalSettings, showGoalInsights, setShowGoalInsights } = React.useContext(TrackerContext);
+    
     const [goalType, setGoalType] = React.useState(goalSettings.goalType);
     const [goalDuration, setGoalDuration] = React.useState(goalSettings.goalDuration);
     const [goalTags, setGoalTags] = React.useState(goalSettings.goalTags);
@@ -96,6 +96,18 @@ const Goals = () => {
     useEffect(() => {
         fetch_data();
     }, [])
+
+    
+    useEffect(() => {
+        // console.log(goalDuration)
+        // console.log(goalSettings?.goalDuration)
+        if(goalDuration === 1)
+            setGoalPeriodString("Daily")
+        else if(goalDuration === 7)
+            setGoalPeriodString("Weekly")
+        else if(goalDuration === 30)
+            setGoalPeriodString("Monthly")
+    }, [goalPeriodString])
 
     const handleDurationChange = (e) => {
         setGoalDuration(Number(e.target.value));
@@ -250,6 +262,13 @@ const Goals = () => {
     }, [goalSettings?.goalDuration])
 
     useEffect(() => {
+        if (goalDuration === 1)
+            setGoalPeriodString("Daily");
+        else if (goalDuration === 7)
+            setGoalPeriodString("Weekly");
+        else if (goalDuration === 30)
+            setGoalPeriodString("Monthly");
+
         setGoalAmount(500 * goalDuration);
     }, [goalDuration])
 
@@ -653,9 +672,7 @@ const Goals = () => {
                                                                 <Box sx={{ padding: "25px" }} mb={2} mt={1}>
                                                                     <div>
                                                                         <Doughnut data={data} key={pieChartData.totalSpent} plugins={plugins} options={options} />
-
                                                                     </div>
-                                                                  
                                                                 </Box>
                                                             ) : (
                                                                 <Box display="flex" alignItems="center" justifyContent={"center"} mb={2} mt={1}>

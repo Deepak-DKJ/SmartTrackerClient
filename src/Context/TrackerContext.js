@@ -8,7 +8,7 @@ const TrackerProvider = ({ children }) => {
   const [inputMsg, setInputMsg] = useState('');
   const [filteredItems, setFilteredItems] = useState(null);
   const [searchedItems, setSearchedItems] = useState({});
-
+  const [goalPeriodString, setGoalPeriodString] = useState("NA");
   const [filters, setFilters] = useState(() => {
     const storedFilters = JSON.parse(localStorage.getItem('filterLocal'));
     return storedFilters
@@ -53,10 +53,12 @@ const TrackerProvider = ({ children }) => {
     let startDate, endDate;
 
     if (goalSettings.goalDuration === 1) {
+      setGoalPeriodString("Daily")
         // Daily: Today only
         startDate = now.startOf("day");
         endDate = now.endOf("day");
     } else if (goalSettings.goalDuration === 7) {
+      setGoalPeriodString("Weekly")
         // Weekly: Monday to Sunday of the current week
         if (now.weekday() === 0) {
             // Special case: Sunday (treat as the current week)
@@ -67,6 +69,7 @@ const TrackerProvider = ({ children }) => {
             endDate = startDate.add(6, "days").endOf("day"); // Sunday
         }
     } else if (goalSettings.goalDuration === 30) {
+      setGoalPeriodString("Monthly")
         // Monthly: Start to end of the current month
         startDate = now.startOf("month");
         endDate = now.endOf("month");
@@ -119,7 +122,7 @@ const TrackerProvider = ({ children }) => {
     }
   }
   return (
-    <TrackerContext.Provider value={{ currentRange, setCurrentRange, showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport, pieChartData, setPieChartData, barChartData, setBarChartData}}> 
+    <TrackerContext.Provider value={{ goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport, pieChartData, setPieChartData, barChartData, setBarChartData}}> 
       {children}
     </TrackerContext.Provider>
   )
