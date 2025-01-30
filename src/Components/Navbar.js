@@ -28,7 +28,7 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CategoryIcon from '@mui/icons-material/Category';
-
+import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -48,7 +48,7 @@ import InputLabel from '@mui/material/InputLabel';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell, CircularProgress, Alert } from '@mui/material';
+import { DialogActions, Menu, Snackbar, TextField, Tooltip, ListItemIcon, TableContainer, Table, TableBody, TableRow, TableCell, CircularProgress, Alert, FormLabel, RadioGroup, Radio } from '@mui/material';
 import { TrackerContext } from '../Context/TrackerContext';
 import { Slide } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
@@ -188,7 +188,7 @@ function DrawerAppBar(props) {
             setExpExpenses(true);
         }
     };
-    const { catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, filtersExport, setFiltersExport, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
+    const {showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, filtersExport, setFiltersExport, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
 
     const [expExpenses, setExpExpenses] = React.useState(filtersExport.showExpenses);
     const [expEarnings, setExpEarnings] = React.useState(filtersExport.showEarnings);
@@ -242,6 +242,9 @@ function DrawerAppBar(props) {
 
     const handleCloseFilterModal = () => {
         setOpenFilterModal(false);
+    };
+    const handleGoalSettingsClicked = () => {
+        setShowGoalInsights(false);
     };
 
     const handleOpenExportModal = () => {
@@ -689,6 +692,11 @@ function DrawerAppBar(props) {
                 <ListItem disablePadding>
                     <ListItemButton onClick={(e) => { setSearchString(""); setValueNav(2); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
                         <ListItemText primary="Reports" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={(e) => { setSearchString(""); setValueNav(3); navigate('/smart-tracker/create') }} sx={{ textAlign: 'center' }}>
+                        <ListItemText primary="Goals" />
                     </ListItemButton>
                 </ListItem>
 
@@ -1173,8 +1181,8 @@ function DrawerAppBar(props) {
                                                                         marginTop: '0px',
                                                                         marginBottom: '12px',
                                                                         padding: '8px',
-                                                                        paddingLeft:"15px",
-                                                                        paddingRight:"12px",
+                                                                        paddingLeft: "15px",
+                                                                        paddingRight: "12px",
                                                                         borderRadius: '10px',
                                                                         backgroundColor: '#2a2a2a',
                                                                     }}
@@ -1639,6 +1647,17 @@ function DrawerAppBar(props) {
 
                                 </>
 
+                            )}
+
+                            {page === 'goals' && (
+                                <>
+                                    <Typography sx={{ marginLeft: "auto" }} variant="h6" noWrap component="div">
+                                        Smart Tracker
+                                    </Typography>
+                                    <Tooltip title="Goal Settings" arrow>
+                                        <SettingsIcon onClick={handleGoalSettingsClicked} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
+                                    </Tooltip>
+                                </>
                             )}
 
                         </Toolbar>

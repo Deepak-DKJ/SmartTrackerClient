@@ -281,7 +281,7 @@ const Summary = () => {
                 value={duration}
                 onChange={handleDurationChange}
                 displayEmpty
-                sx={{ minWidth: "40%", mt: 0, maxHeight: "35px", fontSize: "15px" }}
+                sx={{ minWidth: "40%", mt: 0, maxHeight: "35px", fontSize: "15px", backgroundColor:'#323232' }}
               >
                 <MenuItem value={7}>Last 1 Week</MenuItem>
                 <MenuItem value={30}>Last 1 month</MenuItem>
@@ -302,7 +302,7 @@ const Summary = () => {
                     sx: {
                       height: "35px",
                       width: "140px",
-                      color: 'red'
+                      bgcolor:'#323232'
                     },
                     inputProps: {
                       sx: {
@@ -325,6 +325,7 @@ const Summary = () => {
                     sx: {
                       height: "35px",
                       width: "140px",
+                      bgcolor:'#323232'
                     },
                     inputProps: {
                       sx: {
@@ -340,14 +341,6 @@ const Summary = () => {
               />
             </Box>
           )}
-          {/* <Button
-            variant="contained"
-
-            onClick={fetchChartsAndSummary}
-            sx={{ width: "55%", margin: "20px" }}
-          >
-            Generate Reports
-          </Button> */}
         </Box>
 
         {/* Bottom Section - Placeholder for Summary & Charts */}
@@ -392,7 +385,7 @@ const Summary = () => {
                                   {
                                     label: 'Earnings',
                                     data: earnings,
-                                    borderColor: '#4caf50',
+                                    borderColor: '#00D26A',
                                     hidden: summaryItems.Earning === 0
                                     // backgroundColor: 'rgba(251, 192, 147, 0.4)',
                                   },

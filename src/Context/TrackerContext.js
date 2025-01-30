@@ -1,4 +1,5 @@
 import axios from "axios";
+import dayjs from "dayjs";
 import { children, createContext, useState } from "react";
 const TrackerContext = createContext()
 
@@ -13,6 +14,14 @@ const TrackerProvider = ({ children }) => {
     return storedFilters
       ? { lastxdays: storedFilters.lastxdays, type: "All", cat: "Any" }
       : { lastxdays: 7, type: "All", cat: "Any" };
+  });
+  
+  const [showGoalInsights, setShowGoalInsights] = useState(true);
+  const [goalSettings, setGoalSettings] = useState(() => {
+    const storedGoals = JSON.parse(localStorage.getItem('goalSettingsLocal'));
+    return storedGoals
+      ? { goalType: storedGoals.goalType, goalDuration: storedGoals.goalDuration, goalTags: storedGoals.goalTags, goalAmount: storedGoals.goalAmount }
+     : { goalType: "Expense", goalDuration: 1, goalTags: [], goalAmount: 500 };
   });
 
   const [filtersExport, setFiltersExport] = useState(() => {
@@ -35,6 +44,13 @@ const TrackerProvider = ({ children }) => {
   const [Label, setLabel] = useState("")
   const [summaryItems, setSummaryItems] = useState(null);
   const [chartItems, setChartItems] = useState(null);
+  const [currentRange, setCurrentRange] = useState({
+    startDate: dayjs().startOf("day"),
+    endDate: dayjs().endOf("day"),
+  });
+  const [pieChartData, setPieChartData] = useState(null);
+  const [barChartData, setBarChartData] = useState(null);
+
   const [searchString, setSearchString] = useState("")
   const [searchString2, setSearchString2] = useState("")
   // console.log(localStorage.getItem('navTab'))
@@ -43,7 +59,7 @@ const TrackerProvider = ({ children }) => {
     if(localStorage.getItem('navTab') === null)
       return 1;
     const savedValue = Number(localStorage.getItem('navTab'));
-    return savedValue >= 0 && savedValue <= 2 ? savedValue : 1; // Ensure within valid range
+    return savedValue >= 0 && savedValue <= 3 ? savedValue : 1; // Ensure within valid range
   })
   // console.log(savedValue)
   // console.log(valueNav)
@@ -76,7 +92,7 @@ const TrackerProvider = ({ children }) => {
     }
   }
   return (
-    <TrackerContext.Provider value={{ fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport }}>
+    <TrackerContext.Provider value={{ currentRange, setCurrentRange, showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport, pieChartData, setPieChartData, barChartData, setBarChartData}}> 
       {children}
     </TrackerContext.Provider>
   )

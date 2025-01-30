@@ -301,7 +301,6 @@ function CreateItem() {
               <TouchAppIcon fontSize={"small"} /> Tap the mic for voice-based input!
             </Typography>
           </Box>
-
           <TextField
             label={listening === true ? "Listening . . ." : "Provide Income/Expense Details here"}
             placeholder="e.g: ek litre dudh assi rupay . . ."

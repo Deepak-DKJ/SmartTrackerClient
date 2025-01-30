@@ -4,7 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Paper from '@mui/material/Paper';
-import { Button, createTheme, ThemeProvider } from '@mui/material';
+import { Badge, Button, createTheme, ThemeProvider } from '@mui/material';
 import Dashboard from './Dashboard';
 import CreateItem from './CreateItem';
 import Summary from './Summary';
@@ -20,8 +20,13 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 import InsertChartIcon from '@mui/icons-material/InsertChart';
 import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
+
+import FlagIcon from '@mui/icons-material/Flag';
+import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
+
 import DrawerAppBar from './Navbar';
 import { useNavigate } from 'react-router-dom';
+import Goals from './Goals';
 
 const darkTheme = createTheme({
     palette: {
@@ -88,6 +93,12 @@ const { setSearchString, setSearchString2, valueNav, setValueNav } = React.useCo
         <Summary />
         </>
       )}
+      {valueNav === 3 && (
+        <>
+        <DrawerAppBar page='goals' />
+        <Goals />
+        </>
+      )}
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} >
         <BottomNavigation
           showLabels
@@ -102,6 +113,19 @@ const { setSearchString, setSearchString2, valueNav, setValueNav } = React.useCo
           {valueNav === 1 ? (<BottomNavigationAction label="Create" icon={<AddCircleIcon />} />) : (<BottomNavigationAction label="Create" icon={<AddCircleOutlineIcon />} />)}
 
           {valueNav === 2 ? (<BottomNavigationAction label="Reports" icon={<InsertChartIcon />} />) : (<BottomNavigationAction label="Reports" icon={<InsertChartOutlinedIcon />} />)}
+
+          <BottomNavigationAction 
+    label="Goals" 
+    icon={
+        <Badge
+            color="error" 
+            variant="dot" 
+            // invisible={valueNav === 3} // Control badge visibility dynamically
+        >
+            {valueNav === 3 ? <FlagIcon /> : <OutlinedFlagIcon />}
+        </Badge>
+    } 
+/>
           
         </BottomNavigation>
       </Paper>
