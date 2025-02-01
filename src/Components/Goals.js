@@ -594,8 +594,8 @@ const Goals = () => {
                                  <Divider />
  
                                  <Box display="flex" justifyContent="space-between">
-                                     <Typography variant="subtitle2"><WalletIcon sx={{ marginBottom: "4px", fontSize: "18px" }} /> {(goalSettings?.goalType === "Expense") ? "Spent :" : "Earned :"} ₹{pieChartData?.totalSpent}</Typography>
-                                     <Typography variant="subtitle2"><ModeStandbyRoundedIcon sx={{ marginBottom: "4px", fontSize: "18px" }} /> Goal : ₹{goalSettings.goalAmount}</Typography>
+                                     <Typography variant="subtitle2"><WalletIcon sx={{ marginBottom: "2px", fontSize: "18px" }} /> {(goalSettings?.goalType === "Expense") ? "Spent :" : "Earned :"} ₹{pieChartData?.totalSpent}</Typography>
+                                     <Typography variant="subtitle2"><ModeStandbyRoundedIcon sx={{ marginBottom: "2px", fontSize: "18px" }} /> Goal : ₹{goalSettings.goalAmount}</Typography>
                                  </Box>
                              </Card>
                             )}
