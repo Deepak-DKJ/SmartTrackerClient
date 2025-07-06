@@ -44,7 +44,7 @@ const Input = styled(MuiInput)`
 
 
 const Goals = () => {
-    const { goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, items, pieChartData, setPieChartData, barChartData, setBarChartData, fetch_data, goalSettings, setGoalSettings, showGoalInsights, setShowGoalInsights } = React.useContext(TrackerContext);
+    const { catGoalsList, goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, items, pieChartData, setPieChartData, barChartData, setBarChartData, fetch_data, goalSettings, setGoalSettings, showGoalInsights, setShowGoalInsights } = React.useContext(TrackerContext);
     
     const [goalType, setGoalType] = React.useState(goalSettings.goalType);
     const [goalDuration, setGoalDuration] = React.useState(goalSettings.goalDuration);
@@ -195,11 +195,11 @@ const Goals = () => {
             .flat();
 
         const totalSpent = filteredItems
-            .filter((item) => item.type === goalSettings.goalType)
+            .filter((item) => item.type === goalSettings.goalType && catGoalsList.includes(item.category))
             .reduce((sum, item) => sum + item.totalPrice, 0);
 
         const categoryWiseData = filteredItems.reduce((acc, item) => {
-            if (item.type === goalSettings.goalType) {
+            if (item.type === goalSettings.goalType && catGoalsList.includes(item.category)) {
                 acc[item.category] = (acc[item.category] || 0) + item.totalPrice;
             }
             return acc;

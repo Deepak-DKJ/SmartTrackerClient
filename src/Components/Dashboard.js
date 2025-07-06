@@ -90,7 +90,7 @@ const getStringDate = (date) => {
 }
 
 const Dashboard = () => {
-  const { fetch_data, catList, setCatList, searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems } = useContext(TrackerContext);
+  const { fetch_data, catList, setCatList, searchString2, setSearchString2, setSearchString, searchedItems, setSearchedItems, searchString, filters, baseUrl, items, setItems, filteredItems, setFilteredItems, hasDataLoaded, setHasDataLoaded } = useContext(TrackerContext);
   const [showProgress, setShowProgress] = useState(false);
   const ref = React.useRef(null)
 
@@ -143,9 +143,14 @@ const Dashboard = () => {
     }
 
     setFilteredItems(itemsForLastxDays);
+    setHasDataLoaded(true);
     setSearchedItems(itemsForLastxDays)
     setShowProgress(false);
   };
+
+  // useEffect(() => {
+
+  // }, [filteredItems])
 
   useEffect(() => {
     if (searchString === "") {
@@ -483,14 +488,17 @@ const Dashboard = () => {
       maxWidth: '500px',
       bgcolor: 'background.default',
     }}>
-      {items === null || filteredItems === null ? (
+      {!hasDataLoaded ? (
         <Box display="flex" justifyContent="center" alignItems="center" height='calc(90vh - 56px)'>
           <CircularProgress />
         </Box>
       ) : (
         <>
           {filteredItems && Object.keys(filteredItems).length === 0 ? (
-            <h5 style={{ marginTop: "30px", textAlign: "center" }}>No Entries found!</h5>
+            <h5 style={{ marginTop: "30px", textAlign: "center" }}>
+      {console.log("Data loaded?", hasDataLoaded)}
+             No Entries found!
+            </h5>
           ) : (
             <>
               <div>

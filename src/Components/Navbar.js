@@ -67,7 +67,6 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
-
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
 });
@@ -188,7 +187,7 @@ function DrawerAppBar(props) {
             setExpExpenses(true);
         }
     };
-    const {showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, filtersExport, setFiltersExport, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
+    const { showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, catGoalsList, setCatGoalsList, catList, setCatList, summaryItems, setValueNav, searchString, setSearchString, filters, setFilters, filtersExport, setFiltersExport, items, setItems, filteredItems, setFilteredItems, setSearchedItems, Label, chartItems, setInputMsg, baseUrl } = React.useContext(TrackerContext);
 
     const [expExpenses, setExpExpenses] = React.useState(filtersExport.showExpenses);
     const [expEarnings, setExpEarnings] = React.useState(filtersExport.showEarnings);
@@ -257,6 +256,7 @@ function DrawerAppBar(props) {
     };
 
     const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [dialogOpenGoals, setDialogOpenGoals] = React.useState(false);
     const [showInfo, setShowInfo] = React.useState(() => {
         const storedValue = localStorage.getItem('showInfo');
         return storedValue !== null ? JSON.parse(storedValue) : true;
@@ -322,6 +322,8 @@ function DrawerAppBar(props) {
         setSelectedDate(date);
     };
     const [savedList, setSavedList] = React.useState(catList);
+    const [savedGoalsList, setSavedGoalsList] = React.useState(catGoalsList);
+    // console.log(catGoalsList)
     const [newCategory, setNewCategory] = React.useState("");
     const handleAddCategory = () => {
         if (newCategory.trim() && !catList.includes(newCategory.trim())) {
@@ -382,8 +384,39 @@ function DrawerAppBar(props) {
         }
     };
 
+
+    const handleSaveGoalsCategories = async () => {
+        setDialogOpenGoals(false); // Close dialog after saving
+        setAlert({
+            "vis": true,
+            "msg": "Goals Categories modified successfully !"
+        })
+
+        try {
+            const data = {
+                "cats": catGoalsList
+            };
+            let authToken = localStorage.getItem("token");
+            // console.log(authToken);
+            const response = await axios.put(`${baseUrl}/items/updateGoalsCategory`, data, {
+                headers: {
+                    Token: authToken, // Set the Authorization header with Bearer token
+                    withCredentials: true,
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+            setSavedGoalsList(catGoalsList)
+
+        } catch (err) {
+            console.log("Error2: ", err.response);
+        }
+    };
+
     const handleDelete = (categoryToDelete) => () => {
         setCatList((categories) => categories.filter((cat) => cat !== categoryToDelete));
+    };
+    const handleDeleteGoals = (categoryToDelete) => () => {
+        setCatGoalsList((categories) => categories.filter((cat) => cat !== categoryToDelete));
     };
 
     const [loadingExcel, setLoadingExcel] = React.useState(false);
@@ -761,6 +794,11 @@ function DrawerAppBar(props) {
         if (savedList.length === 0)
             setSavedList(catList)
     }, [catList])
+
+    React.useEffect(() => {
+        if (savedGoalsList.length === 0)
+            setSavedGoalsList(catGoalsList)
+    }, [catGoalsList])
     const [daysNumber, setDaysNumber] = React.useState(filters.lastxdays);
     const [filterType, setFilterType] = React.useState(filters.type);
     const [catType, setCatType] = React.useState(filters.cat);
@@ -768,7 +806,26 @@ function DrawerAppBar(props) {
     const container = window !== undefined ? () => window().document.body : undefined;
     const handleTagClose = () => {
         setDialogOpen(false)
+        setDialogOpenGoals(false);
     }
+    const handleReset = () => {
+        const defaultCategories = [
+            "Groceries",
+            "Food/Drinks",
+            "Household",
+            "Shopping",
+            "Fuel/Travel",
+            "Healthcare",
+            "Entertainment",
+            "Others",
+        ];
+        const allItems = Object.values(items).flat();
+        const expenseCats = allItems
+            .map(item => item.category);
+        const extras = expenseCats.filter(cat => !defaultCategories.includes(cat));
+        const uniqueExtras = Array.from(new Set(extras));
+        setCatGoalsList([...defaultCategories, ...uniqueExtras]);
+    };
 
     return (
 
@@ -1648,16 +1705,143 @@ function DrawerAppBar(props) {
                                 </>
 
                             )}
-
                             {page === 'goals' && (
-                                <>
-                                    <Typography sx={{ marginLeft: "auto" }} variant="h6" noWrap component="div">
+                                <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                                    <Typography variant="h6" noWrap component="div" sx={{marginLeft:"auto"}}>
                                         Smart Tracker
                                     </Typography>
-                                    <Tooltip title="Goal Settings" arrow>
-                                        <SettingsIcon onClick={handleGoalSettingsClicked} sx={{ marginLeft: 'auto', fontSize: "27px" }} />
-                                    </Tooltip>
-                                </>
+                                    <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+                                        
+                                        {showGoalInsights ? (
+                                            <Tooltip title="Goal Settings" arrow>
+                                            <SettingsIcon onClick={handleGoalSettingsClicked} sx={{ marginRight: "5px", fontSize: "27px" }} />
+                                        </Tooltip>
+                                        ) : (
+                                            <Tooltip title="Configure Tags" arrow>
+                                            <LocalOfferIcon
+                                                onClick={() => {
+                                                    // console.log(savedGoalsList)
+                                                    setCatGoalsList(savedGoalsList)
+                                                    setDialogOpenGoals(true)
+                                                }}
+                                                sx={{ marginRight:"7px", fontSize: "24px" }}
+                                            />
+                                        </Tooltip>
+                                        )
+                                        }
+                                    </Box>
+                                    
+                                    <Snackbar
+                                        autoHideDuration={53000}
+                                        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                                        open={alert.vis}
+                                        onClose={() => {
+                                            setAlert({
+                                                vis: false,
+                                                msg: "",
+                                            });
+                                        }}
+                                        sx={{
+                                            position: "fixed",
+                                            bottom: "8.2vh"
+                                        }}
+                                        TransitionComponent={Slide}
+                                        message={alert.msg}
+
+                                        ContentProps={{
+                                            style: {
+                                                backgroundColor: "#333",  // Dark background
+                                                color: "#fff",            // Light text color
+                                            },
+                                        }}
+                                    />
+
+
+                                    <Box>
+                                        <Dialog open={dialogOpenGoals}
+                                            onClose={(event, reason) => {
+                                                if (reason === "backdropClick") {
+                                                    // Do nothing to prevent dialog close
+                                                    return;
+                                                }
+                                                handleTagClose(); // Handle explicit close actions
+                                            }}
+                                            TransitionComponent={Transition}
+                                            fullWidth maxWidth="sm" BackdropProps={{
+                                                sx: {
+                                                    backgroundColor: "rgba(0, 0, 0, 0.9)", // Semi-transparent black background
+                                                },
+                                            }}>
+                                            <DialogTitle>Manage Goals Categories</DialogTitle>
+                                            <DialogContent>
+                                                <Paper
+                                                    sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        flexWrap: 'wrap',
+                                                        listStyle: 'none',
+                                                        p: 0,
+                                                        paddingTop: "8px",
+                                                        paddingBottom: "8px",
+                                                        m: 0,
+                                                    }}
+                                                    component="ul"
+                                                >
+                                                    {catGoalsList !== undefined && catGoalsList.map((category, index) => (
+                                                        <ListItem key={index}>
+                                                            <Chip
+                                                                variant="contained"
+                                                                label={category}
+                                                                onDelete={handleDeleteGoals(category)}
+                                                            />
+
+                                                        </ListItem>
+                                                    ))}
+                                                </Paper>
+                                              </DialogContent>
+                                                    
+                                            <Box
+                                                sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                                            >
+                                                <Button
+                                                    onClick={() => {
+                                                        handleTagClose();
+                                                    }}
+                                                    size='small'
+                                                    variant="contained"
+                                                    sx={{ marginBottom: "20px", marginRight: "12px", backgroundColor: 'lightgrey', color: 'black' }}
+                                                >
+                                                    close
+                                                </Button>
+
+                                                <Button
+                                                    onClick={() => {
+                                                        handleReset();
+                                                        // handleTagClose();
+                                                    }}
+                                                    size='small'
+                                                    variant="contained"
+                                                    color='secondary'
+                                                    sx={{
+                                                        marginBottom: "20px", marginRight: "12px",
+                                                    }}
+                                                >
+                                                    reset
+                                                </Button>
+
+                                                <Button
+                                                    onClick={handleSaveGoalsCategories}
+                                                    variant="contained"
+                                                    sx={{ marginBottom: "20px", color: "black", backgroundColor: "cyan" }}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </Box>
+                                        </Dialog>
+                                    </Box>
+                                </Box>
+
+
                             )}
 
                         </Toolbar>

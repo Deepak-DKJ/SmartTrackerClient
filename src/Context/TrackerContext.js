@@ -41,6 +41,7 @@ const TrackerProvider = ({ children }) => {
   });
 
   const [catList, setCatList] = useState([]);
+  const [catGoalsList, setCatGoalsList] = useState([]);
   const [Label, setLabel] = useState("")
   const [summaryItems, setSummaryItems] = useState(null);
   const [chartItems, setChartItems] = useState(null);
@@ -80,7 +81,7 @@ const TrackerProvider = ({ children }) => {
 }, [goalSettings.goalDuration]); 
   const [pieChartData, setPieChartData] = useState(null);
   const [barChartData, setBarChartData] = useState(null);
-
+  const [hasDataLoaded, setHasDataLoaded] = useState(false);
   const [searchString, setSearchString] = useState("")
   const [searchString2, setSearchString2] = useState("")
   // console.log(localStorage.getItem('navTab'))
@@ -111,18 +112,21 @@ const TrackerProvider = ({ children }) => {
       // console.log(response.data)
       const dat = response.data?.entries
       const cats = response.data?.cats
+      const goalCats = response.data?.goalcats
       // console.log(cats)
       // console.log(dat)
       setItems(dat)
       setCatList(cats)
+      setCatGoalsList(goalCats)
     }
     catch (err) {
       console.log(err)
       // setShowProgress(false)
     }
+    // setHasDataLoaded(true);
   }
   return (
-    <TrackerContext.Provider value={{ goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport, pieChartData, setPieChartData, barChartData, setBarChartData}}> 
+    <TrackerContext.Provider value={{ hasDataLoaded, setHasDataLoaded, catGoalsList, setCatGoalsList, goalPeriodString, setGoalPeriodString, currentRange, setCurrentRange, showGoalInsights, setShowGoalInsights, goalSettings, setGoalSettings, fetch_data, catList, setCatList, Label, setLabel, searchString2, setSearchString2, searchedItems, setSearchedItems, valueNav, setValueNav, chartItems, setChartItems, summaryItems, setSummaryItems, searchString, setSearchString, inputMsg, setInputMsg, filters, setFilters, items, setItems, filteredItems, setFilteredItems, baseUrl, filtersExport, setFiltersExport, pieChartData, setPieChartData, barChartData, setBarChartData}}> 
       {children}
     </TrackerContext.Provider>
   )

@@ -122,7 +122,7 @@ const Summary = () => {
     // Iterate through chartItems
     Object.entries(chartItems).forEach(([date]) => {
       const records = items[date];
-      if(!records)
+      if (!records)
         return
       records.forEach((record) => {
         const totalPrice = record.totalPrice;
@@ -281,7 +281,7 @@ const Summary = () => {
                 value={duration}
                 onChange={handleDurationChange}
                 displayEmpty
-                sx={{ minWidth: "40%", mt: 0, maxHeight: "35px", fontSize: "15px", backgroundColor:'#323232' }}
+                sx={{ minWidth: "40%", mt: 0, maxHeight: "35px", fontSize: "15px", backgroundColor: '#323232' }}
               >
                 <MenuItem value={7}>Last 1 Week</MenuItem>
                 <MenuItem value={30}>Last 1 month</MenuItem>
@@ -302,7 +302,7 @@ const Summary = () => {
                     sx: {
                       height: "35px",
                       width: "140px",
-                      bgcolor:'#323232'
+                      bgcolor: '#323232'
                     },
                     inputProps: {
                       sx: {
@@ -325,7 +325,7 @@ const Summary = () => {
                     sx: {
                       height: "35px",
                       width: "140px",
-                      bgcolor:'#323232'
+                      bgcolor: '#323232'
                     },
                     inputProps: {
                       sx: {
@@ -386,13 +386,17 @@ const Summary = () => {
                                     label: 'Earnings',
                                     data: earnings,
                                     borderColor: '#00D26A',
-                                    hidden: summaryItems.Earning === 0
+                                    hidden: summaryItems.Earning === 0,
+                                    pointHitRadius: 12,      // how far a touch can be from the point
+                                    pointHoverRadius: 12,
                                     // backgroundColor: 'rgba(251, 192, 147, 0.4)',
                                   },
                                   {
                                     label: 'Expenses',
                                     data: expenses,
                                     borderColor: 'cyan',
+                                    pointHitRadius: 8,      // how far a touch can be from the point
+                                    pointHoverRadius: 8,
                                     // backgroundColor: 'rgba(103, 242, 209, 0.4)',
                                   },
                                 ],
@@ -404,7 +408,7 @@ const Summary = () => {
                                     title: {
                                       display: true,
                                       text: `${Label}`,
-                                      color:'white'
+                                      color: 'white'
                                     },
                                     grid: {
                                       display: true, // Enable x-axis grid lines
@@ -428,8 +432,8 @@ const Summary = () => {
                                 plugins: {
                                   legend: {
                                     labels: {
-                                      font: { weight: "bold", size: 13},
-                                      color:'#B0B0B0'
+                                      font: { weight: "bold", size: 13 },
+                                      color: '#B0B0B0'
                                     },
                                   },
                                 },
@@ -449,51 +453,51 @@ const Summary = () => {
 
                               </Box>
 
-                              
+
                               {pieChartItems.length > 0 ? (
                                 <Pie
-                                data={{
-                                  labels: pieChartItems.map((item) => item.category),
-                                  datasets: [
-                                    {
-                                      data: pieChartItems.map((item) => item.total),
-                                      backgroundColor: [
-                                        "#FF6384", // Add colors for each category
-                                        "#36A2EB",
-                                        "#FFCE56",
-                                        "#4BC0C0",
-                                        "#9966FF",
-                                      ],
-                                      hoverOffset: 4, // Offset for hover effect
-                                    },
-                                  ],
-                                }}
-                                options={{
-                                  plugins: {
-                                    tooltip: {
-                                      callbacks: {
-                                        label: function (context) {
-                                          const label = context.label || "";
-                                          const value = context.raw;
-                                          let percentage = 0;
-                                          if (summaryItems?.Expense !== 0)
-                                          percentage = Math.round((value / summaryItems?.Expense) * 100); 
-                                          return ` ${percentage}% : Rs. ${value}`; // Show value on hover
+                                  data={{
+                                    labels: pieChartItems.map((item) => item.category),
+                                    datasets: [
+                                      {
+                                        data: pieChartItems.map((item) => item.total),
+                                        backgroundColor: [
+                                          "#FF6384", // Add colors for each category
+                                          "#36A2EB",
+                                          "#FFCE56",
+                                          "#4BC0C0",
+                                          "#9966FF",
+                                        ],
+                                        hoverOffset: 4, // Offset for hover effect
+                                      },
+                                    ],
+                                  }}
+                                  options={{
+                                    plugins: {
+                                      tooltip: {
+                                        callbacks: {
+                                          label: function (context) {
+                                            const label = context.label || "";
+                                            const value = context.raw;
+                                            let percentage = 0;
+                                            if (summaryItems?.Expense !== 0)
+                                              percentage = Math.round((value / summaryItems?.Expense) * 100);
+                                            return ` ${percentage}% : Rs. ${value}`; // Show value on hover
+                                          },
+                                        },
+                                      },
+                                      legend: {
+                                        display: true,
+                                        position: "bottom",
+                                        labels: {
+                                          color: "#B0B0B0",
                                         },
                                       },
                                     },
-                                    legend: {
-                                      display: true,
-                                      position: "bottom",
-                                      labels: {
-                                        color: "#B0B0B0",
-                                    },
-                                    },
-                                  },
-                                }}
-                              />
+                                  }}
+                                />
                               ) : (
-                                <h6 style={{ textAlign: "center", marginTop:"50%" }}>No data found!</h6>
+                                <h6 style={{ textAlign: "center", marginTop: "50%" }}>No data found!</h6>
                               )}
 
                             </div>
