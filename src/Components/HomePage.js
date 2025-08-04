@@ -49,40 +49,97 @@ const HomePage = () => {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box sx={{ textAlign: 'center', mb: 0 }}>
-          <Typography variant="h5" gutterBottom sx={{ backgroundColor:'#3D3D3D', color:'white', textAlign: 'center', marginTop: '0px', padding:'10px', borderRadius:'0px' }}>
+      <Box
+        sx={{
+          textAlign: 'center',
+          mb: 0,
+          minHeight: { xs: 'auto', md: '100vh' },
+          display: { xs: 'block', md: 'flex' },
+          flexDirection: { md: 'column' },
+          alignItems: { md: 'center' },
+          justifyContent: { md: 'center' },
+          background: 'black',
+        }}
+      >
+        <Container
+          maxWidth="md"
+          sx={{
+            pt: { xs: 0, md: 6 },
+            pb: { xs: 0, md: 6 },
+            background: 'transparent',
+          }}
+        >
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{
+              backgroundColor: '#3D3D3D',
+              color: 'white',
+              textAlign: 'center',
+              marginTop: '10px',
+              padding: '10px',
+              borderRadius: '0px',
+            }}
+          >
             Smart Tracker
           </Typography>
-        </Box>
-      <Container>      
-        <Box sx={{ textAlign: 'center', mb: 0, minHeight: '40vh' }}>
-          <img src="/smarttracker.png" alt="TestGen.AI Logo" width="90%" />
-        </Box>
-
-        <Grid container spacing={2}>
-          {steps.map((step, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card variant="outlined" sx={{ height: '100%' }} >
-                <CardContent style={{backgroundColor:"#3D3D3D"}}>
-                  <Typography variant="h6" component="div" >
-                    {step.title}
-                  </Typography>
-                  <Typography variant="body2" color="#A8A8A8" >
-                    {step.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-          
-        
-        <div style={styles.buttonContainer}>
-          <button style={styles.button} onClick={GotoItemsPage}>
-                    Get Started
-                </button>
-                </div>
-      </Container>
+          <Box
+            sx={{
+              textAlign: 'center',
+              mb: 0,
+              minHeight: { xs: '40vh', md: '30vh' },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <img
+              src="/smarttracker.png"
+              alt="TestGen.AI Logo"
+              style={{
+                width: '90%',
+                maxWidth: '420px',
+                margin: '0 auto',
+                display: 'block',
+              }}
+            />
+          </Box>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              mb: { xs: 2, md: 4 },
+              justifyContent: { md: 'center' },
+            }}
+          >
+            {steps.map((step, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card variant="outlined" sx={{ height: '100%' }}>
+                  <CardContent style={{ backgroundColor: "#3D3D3D" }}>
+                    <Typography variant="h6" component="div">
+                      {step.title}
+                    </Typography>
+                    <Typography variant="body2" color="#A8A8A8">
+                      {step.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mt: { xs: 2, md: 4 },
+            }}
+          >
+            <button style={styles.button} onClick={GotoItemsPage}>
+              Get Started
+            </button>
+          </Box>
+        </Container>
+      </Box>
     </ThemeProvider>
   );
 }
